@@ -27,8 +27,7 @@ def _today_msk():
     return (datetime.utcnow() + timedelta(hours=3)).date()
 
 # Токен бота
-# BOT_TOKEN = "7293574058:AAGOx6hFdeRKYX0GbN253V4-wJh4iK2dHKg" #main
-BOT_TOKEN = "8559829857:AAFLHtVnEWlzK-cJddKerSd63EjDIdMKRNw" #local
+
 
 
 # Настройка базы данных (та же, что и в app.py — sales.db в папке приложения)
