@@ -1,0 +1,476 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .repair-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;
+    }
+    
+    /* Иконка сверху - фиксированная */
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .logo-icon a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+    }
+    
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    /* Фильтры */
+    .city-filter {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .city-filter form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 15px 20px;
+        border-radius: 15px;
+    }
+    
+    .city-filter .filter-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .city-filter label {
+        font-weight: 500;
+        color: #333;
+        white-space: nowrap;
+        min-width: 70px;
+        text-align: left;
+    }
+    
+    .city-filter select {
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+        background: white;
+        flex: 1;
+        min-width: 0;
+    }
+    
+    /* Заголовок списка */
+    .repair-header {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        margin: 40px 0 20px 0;
+        text-align: center;
+    }
+    
+    /* Карточки ремонтов */
+    .repair-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .repair-card {
+        background: white;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .repair-card-image-wrapper {
+        padding: 15px;
+        background: white;
+        min-height: 500px;
+    }
+    
+    .repair-card-image {
+        width: 100%;
+        height: 100%;
+        min-height: 470px;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+        background: #f8f8f8;
+        border-radius: 15px;
+    }
+    
+    .repair-card-content {
+        padding: 20px;
+    }
+    
+    .repair-data-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .repair-data-row:last-child {
+        border-bottom: none;
+    }
+    
+    .repair-data-label {
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .repair-data-value {
+        color: #333;
+        font-weight: bold;
+    }
+    
+    .edit-btn {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background: #B58358;
+        color: white;
+        text-align: center;
+        border-radius: 10px;
+        text-decoration: none;
+        margin-top: 15px;
+        font-weight: bold;
+    }
+    
+    .edit-btn:hover {
+        background: #9a6f47;
+    }
+    
+    .delete-form {
+        margin-top: 10px;
+    }
+    
+    .delete-btn {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background: #dc3545;
+        color: white;
+        text-align: center;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    
+    .delete-btn:hover {
+        background: #c82333;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+        background: white;
+        border-radius: 20px;
+    }
+    
+    .add-repair-btn {
+        display: block;
+        width: 100%;
+        padding: 15px;
+        background: #514D4A;
+        color: white;
+        text-align: center;
+        border-radius: 20px;
+        text-decoration: none;
+        font-size: 18px;
+        font-weight: 500;
+        margin-bottom: 20px;
+    }
+    
+    .add-repair-btn:hover {
+        background: #3d3a38;
+    }
+    
+    /* Плитки статистики */
+    .repair-metrics-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .repair-metric-card {
+        flex: 1;
+        min-width: 0;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        box-sizing: border-box;
+    }
+
+    .repair-metric-card h2 {
+        font-size: 30px;
+        font-weight: bold;
+        margin: 0;
+        color: #333;
+    }
+
+    .repair-metric-card p {
+        font-size: 13px;
+        color: #555;
+        margin: 8px 0 0;
+    }
+
+    .repair-profit-card {
+        background: #514D4A;
+        color: white;
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+        width: 100%;
+        box-sizing: border-box;
+        display: block;
+    }
+
+    .repair-profit-card h2 {
+        font-size: 36px;
+        font-weight: bold;
+        margin: 0;
+        color: white;
+    }
+
+    .repair-profit-card p {
+        font-size: 13px;
+        margin: 10px 0 0;
+        opacity: 0.9;
+        color: white;
+    }
+
+    @media (min-width: 768px) {
+        .repair-container {
+            max-width: 600px;
+            padding-top: 90px;
+        }
+        
+        .repair-card {
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .repair-metric-card h2 {
+            font-size: 38px;
+        }
+
+        .repair-profit-card h2 {
+            font-size: 44px;
+        }
+    }
+</style>
+
+<!-- Иконка - фиксированная -->
+<div class="logo-icon">
+    <a href="{{ url_for('main') }}">
+        <img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo">
+    </a>
+</div>
+
+<div class="repair-container">
+    <!-- Фильтры -->
+    <div class="city-filter">
+        <form method="GET" id="filters-form">
+            <div class="filter-row">
+                <label><strong>Год:</strong></label>
+                <select name="year" onchange="this.form.submit()">
+                    <option value="all">Все годы</option>
+                    {% for year in all_years %}
+                        <option value="{{ year }}" {% if year_filter == year|string %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-row">
+                <label><strong>Месяц:</strong></label>
+                <select name="month" onchange="this.form.submit()">
+                    <option value="all">Все месяцы</option>
+                    {% for m in range(1,13) %}
+                        <option value="{{ m }}" {% if month_filter == m|string %}selected{% endif %}>{{ months_ru[m-1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-row">
+                <label><strong>Город:</strong></label>
+                <select name="city" onchange="this.form.submit()">
+                    <option value="all" {% if city_filter == 'all' %}selected{% endif %}>Все города</option>
+                    {% for city in all_cities %}
+                        <option value="{{ city }}" {% if city_filter == city %}selected{% endif %}>{{ city }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-row">
+                <label><strong>Клиент:</strong></label>
+                <select name="client" onchange="this.form.submit()">
+                    <option value="all" {% if client_filter == 'all' %}selected{% endif %}>Все клиенты</option>
+                    {% for client in all_clients %}
+                        <option value="{{ client.id }}" {% if client_filter == client.id|string %}selected{% endif %}>{{ client.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-row">
+                <label><strong>Вид ремонта:</strong></label>
+                <select name="repair_type" onchange="this.form.submit()">
+                    <option value="all" {% if repair_type_filter == 'all' %}selected{% endif %}>Все виды</option>
+                    <option value="Ремонт" {% if repair_type_filter == 'Ремонт' %}selected{% endif %}>Ремонт</option>
+                    <option value="ТО" {% if repair_type_filter == 'ТО' %}selected{% endif %}>ТО</option>
+                    <option value="Полировка" {% if repair_type_filter == 'Полировка' %}selected{% endif %}>Полировка</option>
+                    <option value="Замена стекла" {% if repair_type_filter == 'Замена стекла' %}selected{% endif %}>Замена стекла</option>
+                    <option value="Запчасти" {% if repair_type_filter == 'Запчасти' %}selected{% endif %}>Запчасти</option>
+                    <option value="Другое" {% if repair_type_filter == 'Другое' %}selected{% endif %}>Другое</option>
+                </select>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Кнопка добавления -->
+    <a href="{{ url_for('add_repair', category=category) }}" class="add-repair-btn">Добавить ремонт</a>
+
+    <!-- Плитки статистики по категории -->
+    <div class="repair-metrics-row">
+        <div class="repair-metric-card">
+            <h2>{{ stat_count }}</h2>
+            <p>Товаров в ремонте</p>
+        </div>
+        {% if is_admin %}
+        <div class="repair-metric-card">
+            <h2>{{ "%.0f"|format(stat_income) }}$</h2>
+            <p>Доход</p>
+        </div>
+        {% endif %}
+    </div>
+    {% if is_admin %}
+    <div class="repair-profit-card">
+        <h2>{{ "%.0f"|format(stat_profit) }}$</h2>
+        <p>Прибыль с вычетом расходов</p>
+    </div>
+    {% endif %}
+    
+    <!-- Заголовок списка -->
+    <h2 class="repair-header">{{ category_name }}</h2>
+    
+    <!-- Список ремонтов -->
+    <ul class="repair-list">
+        {% for r in repairs %}
+        <li class="repair-card">
+            <div class="repair-card-image-wrapper">
+                {% if r.photo %}
+                    <img src="{{ url_for('uploaded_file', filename=r.photo) }}" alt="фото" class="repair-card-image">
+                {% else %}
+                    <div class="repair-card-image" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 15px;">
+                    Нет фото
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="repair-card-content">
+                <div class="repair-data-row">
+                    <span class="repair-data-label">Товар</span>
+                    <span class="repair-data-value">{{ r.product_name }}</span>
+                </div>
+                
+                <div class="repair-data-row">
+                    <span class="repair-data-label">Заход</span>
+                    <span class="repair-data-value">{{ "%.0f"|format(r.buy_price) }}$</span>
+                </div>
+                
+                <div class="repair-data-row">
+                    <span class="repair-data-label">Продажа</span>
+                    <span class="repair-data-value">{{ "%.0f"|format(r.sell_price) }}$</span>
+                </div>
+                
+                <div class="repair-data-row">
+                    <span class="repair-data-label">Город</span>
+                    <span class="repair-data-value">{{ r.city.name }}</span>
+                </div>
+                
+                {% if r.client %}
+                <div class="repair-data-row">
+                    <span class="repair-data-label">Клиент</span>
+                    <span class="repair-data-value">{{ r.client.full_name }}</span>
+                </div>
+                {% for label, val in r.client.display_contacts() %}
+                <div class="repair-data-row" style="padding-left: 15px;">
+                    <span class="repair-data-label">{{ label }}</span>
+                    <span class="repair-data-value">{{ val }}</span>
+                </div>
+                {% endfor %}
+                {% endif %}
+                
+                <div class="repair-data-row">
+                    <span class="repair-data-label">Дата</span>
+                    <span class="repair-data-value">
+                        {% set months_ru = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'] %}
+                        {{ r.date.day }} {{ months_ru[r.date.month - 1] }} {{ r.date.year }}
+                    </span>
+                </div>
+                
+                <div class="repair-data-row">
+                    <span class="repair-data-label">Вид ремонта</span>
+                    <span class="repair-data-value">{{ r.repair_type }}</span>
+                </div>
+                
+                {% if r.repair_type_other %}
+                <div class="repair-data-row">
+                    <span class="repair-data-label">Другое</span>
+                    <span class="repair-data-value">{{ r.repair_type_other }}</span>
+                </div>
+                {% endif %}
+                
+                {% if r.comment %}
+                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1);">
+                    <div class="repair-data-label" style="margin-bottom: 5px;">Комментарий</div>
+                    <div style="white-space: pre-wrap; color: #333; font-size: 14px; line-height: 1.5;">{{ r.comment }}</div>
+                </div>
+                {% endif %}
+                
+                <a href="{{ url_for('edit_repair', category=category, repair_id=r.id) }}" class="edit-btn">Изменить</a>
+                
+                {% if is_admin %}
+                <form method="POST" action="{{ url_for('delete_repair', category=category, repair_id=r.id) }}" class="delete-form" onsubmit="return confirm('Вы уверены, что хотите удалить этот ремонт?');">
+                    <button type="submit" class="delete-btn">Удалить</button>
+                </form>
+                {% endif %}
+            </div>
+        </li>
+        {% else %}
+        <li class="empty-state">
+            Пока нет ремонтов в категории "{{ category_name }}".
+            <br><br>
+            <a href="{{ url_for('add_repair', category=category) }}" style="color: #B58358; font-weight: bold;">Добавьте первый!</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,495 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .manager-stats-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;
+    }
+    
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .logo-icon a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+    }
+    
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    .period-card {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 12px 24px;
+        border-radius: 43px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 30px;
+        display: block;
+        width: 65%;
+        margin-left: auto;
+        margin-right: auto;
+        box-sizing: border-box;
+    }
+    
+    .total-bonus-card {
+        background: #514D4A;
+        color: white;
+        padding: 30px 25px;
+        border-radius: 20px;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .total-bonus-card .amount {
+        font-size: 48px;
+        font-weight: bold;
+        margin: 0;
+        color: white;
+    }
+    
+    .total-bonus-card .label {
+        font-size: 14px;
+        margin: 10px 0 0;
+        opacity: 0.9;
+        color: white;
+    }
+    
+    .period-selector {
+        background: rgba(255, 255, 255, 0.7);
+        padding: 15px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .period-selector form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .period-selector .form-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .period-selector select,
+    .period-selector input {
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .period-selector label {
+        font-weight: 500;
+        color: #333;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .period-selector button {
+        background: #B58358;
+        color: white;
+        padding: 8px 20px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+    }
+    
+    .bonus-list {
+        margin: 0 0 30px 0;
+    }
+    
+    .bonus-date-group {
+        margin-bottom: 25px;
+    }
+    
+    .bonus-date-header {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+        padding-left: 5px;
+    }
+    
+    .bonus-item {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 15px 20px;
+        border-radius: 20px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 16px;
+    }
+    
+    .bonus-item-info {
+        flex: 1;
+        min-width: 0;
+        padding-right: 15px;
+    }
+    
+    .bonus-item-info strong {
+        color: #333;
+        font-weight: 500;
+        display: block;
+    }
+    
+    .bonus-item-info .sale-details {
+        font-size: 14px;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .bonus-item-info .bonus-breakdown {
+        font-size: 13px;
+        color: #555;
+        margin-top: 6px;
+        line-height: 1.4;
+    }
+    
+    .bonus-item-info .bonus-breakdown span {
+        display: block;
+    }
+    
+    .bonus-item .amount {
+        color: #333;
+        font-weight: bold;
+        white-space: nowrap;
+        flex-shrink: 0;
+        font-size: 18px;
+    }
+    
+    .bonus-empty {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        color: #666;
+    }
+
+    .manual-bonus-badge {
+        display: inline-block;
+        background: rgba(181, 131, 88, 0.15);
+        color: #B58358;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        margin-left: 6px;
+        vertical-align: middle;
+        letter-spacing: 0.3px;
+    }
+
+    .give-bonus-btn {
+        display: block;
+        width: 100%;
+        padding: 14px;
+        background: #B58358;
+        color: white;
+        border: none;
+        border-radius: 15px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 20px;
+        text-align: center;
+        transition: background 0.2s;
+    }
+    .give-bonus-btn:hover { background: #9d7149; }
+
+    /* Modal */
+    .bonus-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    .bonus-modal-overlay.active { display: flex; }
+    .bonus-modal {
+        background: #fff;
+        border-radius: 20px;
+        padding: 28px 24px 20px;
+        width: 90%;
+        max-width: 360px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    }
+    .bonus-modal h3 {
+        margin: 0 0 20px;
+        font-size: 18px;
+        color: #333;
+    }
+    .bonus-modal label {
+        display: block;
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 4px;
+        font-weight: 500;
+    }
+    .bonus-modal select,
+    .bonus-modal input[type="number"],
+    .bonus-modal input[type="date"],
+    .bonus-modal input[type="text"] {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        font-size: 15px;
+        margin-bottom: 14px;
+        box-sizing: border-box;
+        outline: none;
+    }
+    .bonus-modal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 6px;
+    }
+    .bonus-modal-actions button {
+        flex: 1;
+        padding: 12px;
+        border-radius: 12px;
+        border: none;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .btn-confirm { background: #B58358; color: white; }
+    .btn-confirm:hover { background: #9d7149; }
+    .btn-cancel { background: #f0f0f0; color: #333; }
+    .btn-cancel:hover { background: #e0e0e0; }
+
+    @media (min-width: 768px) {
+        .manager-stats-container {
+            max-width: 600px;
+            padding-top: 90px;
+        }
+        
+        .total-bonus-card .amount {
+            font-size: 52px;
+        }
+    }
+</style>
+
+<div class="manager-stats-container">
+    <div class="logo-icon">
+        <a href="{{ url_for('main') }}">
+            <img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo">
+        </a>
+    </div>
+    
+    <div class="period-selector">
+        <form method="GET">
+            <div class="form-row">
+                <select name="year" onchange="this.form.submit()">
+                    <option value="all">Все годы</option>
+                    {% for y in all_years %}
+                        <option value="{{ y }}" {% if selected_year == y|string %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+                <select name="month" onchange="this.form.submit()">
+                    <option value="all">Все месяцы</option>
+                    {% for m in range(1,13) %}
+                        <option value="{{ m }}" {% if selected_month == m|string %}selected{% endif %}>
+                            {{ ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][m-1] }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            {% if is_admin %}
+            <div class="form-row">
+                <label>
+                    <strong>Менеджер:</strong>
+                    <select name="employee" onchange="this.form.submit()" style="flex: 1;">
+                        <option value="all">Все менеджеры</option>
+                        <option value="murad" {% if employee_filter == 'murad' %}selected{% endif %}>Мурад (бонусы по Москве)</option>
+                        {% for emp in all_employees %}
+                            <option value="{{ emp.id }}" {% if employee_filter == emp.id|string %}selected{% endif %}>{{ emp.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if is_admin and not is_top_manager_stats %}
+    <button class="give-bonus-btn" onclick="openBonusModal()">💰 Выдать бонус</button>
+    {% endif %}
+
+    <div class="period-card">
+        {% if is_top_manager_stats %}
+            {% if is_admin %}Бонусы Мурада · {{ period_label }}{% else %}Мои бонусы · {{ period_label }}{% endif %}
+        {% else %}
+            {{ period_label }}{% if employee_filter != 'all' and employee_filter != 'murad' %}{% for emp in all_employees %}{% if emp.id|string == employee_filter %} - {{ emp.name }}{% endif %}{% endfor %}{% endif %}
+        {% endif %}
+    </div>
+
+    <div class="total-bonus-card">
+        <div class="amount">{{ "%.0f"|format(total_bonus) }}$</div>
+        <div class="label">{% if is_top_manager_stats %}{% if is_admin %}Бонусы Мурада (Москва){% else %}Мои бонусы (Москва){% endif %}{% else %}Общая сумма бонусов{% endif %}</div>
+    </div>
+
+    <div class="bonus-list">
+        {% if bonuses_by_date %}
+            {% for bonus_date, bonuses in bonuses_by_date %}
+            <div class="bonus-date-group">
+                <div class="bonus-date-header">
+                    {% set months_ru_short = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'] %}
+                    {{ bonus_date.day }} {{ months_ru_short[bonus_date.month - 1] }} {{ bonus_date.year }}
+                </div>
+                {% for bonus in bonuses %}
+                <div class="bonus-item">
+                    <div class="bonus-item-info">
+                        {% if bonus.is_manual %}
+                        <strong>{{ bonus.product_name }} <span class="manual-bonus-badge">вручную</span></strong>
+                        {% if bonus.comment %}
+                        <div class="sale-details">{{ bonus.comment }}</div>
+                        {% endif %}
+                        {% else %}
+                        <strong>{{ bonus.product_name }}{% if bonus.is_extra %} <span style="font-size: 12px; color: #6c757d;">(доп. бонус)</span>{% endif %}</strong>
+                        <div class="sale-details">
+                            {% if bonus.reference %}Reference: {{ bonus.reference }} • {% endif %}
+                            Продажа: {{ "%.0f"|format(bonus.sell_price) }}$
+                        </div>
+                        {% if is_admin and (bonus.bonus_murad is not none and bonus.bonus_murad > 0 or (bonus.bonus_extra_sum | default(0)|float) > 0) %}
+                        <div class="bonus-breakdown">
+                            {% if (bonus.bonus_main | default(0)|float) > 0 %}<span>Основной: {{ "%.0f"|format(bonus.bonus_main) }}$</span>{% endif %}
+                            {% if bonus.bonus_murad is not none and bonus.bonus_murad > 0 %}<span>Мурад: {{ "%.0f"|format(bonus.bonus_murad) }}$</span>{% endif %}
+                            {% if (bonus.bonus_extra_sum | default(0)|float) > 0 %}<span>Доп: {{ "%.0f"|format(bonus.bonus_extra_sum) }}$</span>{% endif %}
+                        </div>
+                        {% elif not is_top_manager_stats and not bonus.is_extra %}
+                        {% set initial = bonus.initial_bonus|default(0)|float %}
+                        {% if initial > 0 and bonus.bonus > initial %}
+                        <div class="bonus-breakdown">
+                            <span>Изначально (менеджер): {{ "%.0f"|format(initial) }}$</span>
+                            <span>Добавлено админом: {{ "%.0f"|format(bonus.bonus - initial) }}$</span>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    <span class="amount">{{ "%.0f"|format(bonus.bonus) }}$</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="bonus-empty">{% if is_top_manager_stats %}Нет бонусов Мурада за выбранный период{% else %}Нет бонусов за выбранный период{% endif %}</div>
+        {% endif %}
+    </div>
+</div>
+
+{% if is_admin and not is_top_manager_stats %}
+<!-- Модальное окно "Выдать бонус" -->
+<div class="bonus-modal-overlay" id="bonusModalOverlay">
+    <div class="bonus-modal">
+        <h3>💰 Выдать бонус</h3>
+        <label>Менеджер</label>
+        <select id="bonusEmployee">
+            <option value="">— выберите менеджера —</option>
+            {% for emp in all_employees %}
+            <option value="{{ emp.id }}">{{ emp.name }}</option>
+            {% endfor %}
+        </select>
+        <label>Сумма ($)</label>
+        <input type="number" id="bonusAmount" min="0.01" step="0.01" placeholder="Например: 50">
+        <label>Дата</label>
+        <input type="date" id="bonusDate" value="{{ today_date }}">
+        <label>Комментарий (необязательно)</label>
+        <input type="text" id="bonusComment" placeholder="Причина, проект...">
+        <div id="bonusError" style="color:#e74c3c; font-size:13px; margin-bottom:8px; display:none;"></div>
+        <div class="bonus-modal-actions">
+            <button class="btn-cancel" onclick="closeBonusModal()">Отмена</button>
+            <button class="btn-confirm" onclick="submitManualBonus()">Выдать</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openBonusModal() {
+    document.getElementById('bonusModalOverlay').classList.add('active');
+    document.getElementById('bonusError').style.display = 'none';
+}
+function closeBonusModal() {
+    document.getElementById('bonusModalOverlay').classList.remove('active');
+}
+document.getElementById('bonusModalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeBonusModal();
+});
+
+function submitManualBonus() {
+    const employee_id = document.getElementById('bonusEmployee').value;
+    const amount = document.getElementById('bonusAmount').value;
+    const date = document.getElementById('bonusDate').value;
+    const comment = document.getElementById('bonusComment').value;
+    const errEl = document.getElementById('bonusError');
+
+    if (!employee_id || !amount || parseFloat(amount) <= 0) {
+        errEl.textContent = 'Выберите менеджера и укажите сумму';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    const fd = new FormData();
+    fd.append('employee_id', employee_id);
+    fd.append('amount', amount);
+    fd.append('date', date);
+    fd.append('comment', comment);
+
+    fetch('/add_manual_bonus', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                closeBonusModal();
+                location.reload();
+            } else {
+                errEl.textContent = data.error || 'Ошибка';
+                errEl.style.display = 'block';
+            }
+        })
+        .catch(() => {
+            errEl.textContent = 'Ошибка сети';
+            errEl.style.display = 'block';
+        });
+}
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,630 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .stock-detail-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;  /* Отступ для фиксированного логотипа */
+    }
+    
+    /* Иконка сверху - фиксированная */
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .logo-icon a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+    }
+    
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    /* Фильтр города */
+    .city-filter-bar {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 12px 24px;
+        border-radius: 43px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 20px;
+        width: 100%;
+        box-sizing: border-box;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* Большая карточка с суммой */
+    .stock-main-card {
+        background: #514D4A;
+        color: white;
+        padding: 30px 25px;
+        border-radius: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        text-decoration: none;
+        display: block;
+    }
+    
+    .stock-main-card:hover {
+        background: #3d3a38;
+        transform: translateY(-2px);
+    }
+    
+    .stock-main-card .amount {
+        font-size: 42px;
+        font-weight: bold;
+        margin: 0;
+        color: white;
+    }
+    
+    .stock-main-card .label {
+        font-size: 14px;
+        margin: 10px 0 0;
+        opacity: 0.9;
+        color: white;
+    }
+    
+    /* Две маленькие карточки */
+    .stock-info-cards {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .stock-info-card {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        text-decoration: none;
+        display: block;
+        color: inherit;
+    }
+    
+    .stock-info-card:hover {
+        background: rgba(255, 255, 255, 0.8);
+        transform: translateY(-2px);
+    }
+    
+    .stock-info-card .number {
+        font-size: 32px;
+        font-weight: bold;
+        margin: 0;
+        color: #333;
+    }
+    
+    .stock-info-card .label {
+        font-size: 14px;
+        color: #333;
+        margin: 8px 0 0;
+    }
+    
+    /* Заголовок секции */
+    .section-header {
+        font-size: 18px;
+        font-weight: 500;
+        color: #333;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    /* Карточка товара */
+    .stock-item-card {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* Бейдж комиссионной реализации */
+    .commission-badge-wrapper {
+        text-align: center;
+        margin-bottom: 14px;
+    }
+    
+    .commission-badge {
+        display: inline-block;
+        background: #8FD16A;
+        color: #1a1a1a;
+        font-size: 15px;
+        font-weight: 600;
+        padding: 10px 28px;
+        border-radius: 30px;
+    }
+    
+    /* Бейдж "На подтверждении" — продажа из стока создана менеджером */
+    .pending-badge {
+        display: inline-block;
+        background: #E8A838;
+        color: #1a1a1a;
+        font-size: 15px;
+        font-weight: 600;
+        padding: 10px 28px;
+        border-radius: 30px;
+    }
+    
+    .stock-item-image-wrapper {
+        padding: 15px;
+        background: white;
+        min-height: 500px;
+    }
+    
+    .stock-item-image {
+        width: 100%;
+        height: 100%;
+        min-height: 470px;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+        background: #f8f8f8;
+        border-radius: 15px;
+    }
+    
+    .stock-item-field {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .stock-item-field:last-of-type {
+        border-bottom: none;
+    }
+    
+    .stock-item-label {
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
+    }
+    
+    .stock-item-value {
+        font-size: 14px;
+        color: #333;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 4px 12px;
+        border-radius: 15px;
+    }
+    
+    .stock-item-price {
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+    }
+    
+    /* Карточка ожидаемой прибыли */
+    .profit-card {
+        background: rgba(139, 115, 85, 0.2);
+        border-radius: 15px;
+        padding: 15px;
+        margin: 15px 0;
+    }
+    
+    .profit-card .stock-item-field {
+        border-bottom: none;
+        padding: 5px 0;
+    }
+    
+    .profit-card .stock-item-label {
+        font-weight: 600;
+    }
+    
+    .profit-card .stock-item-price {
+        font-size: 18px;
+        font-weight: bold;
+    }
+    
+    /* Кнопки */
+    .stock-item-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .action-btn {
+        flex: 1;
+        padding: 12px;
+        border-radius: 15px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .action-btn-primary {
+        background: #B58358;
+        color: white;
+    }
+    
+    .action-btn-primary:hover {
+        background: #9d7149;
+    }
+    
+    .action-btn-secondary {
+        background: rgba(255, 255, 255, 0.5);
+        color: #333;
+        border: 1px solid #B58358;
+    }
+    
+    .action-btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.7);
+    }
+    
+    .stock-item-actions form {
+        flex: 1;
+        margin: 0;
+        display: flex;
+    }
+    
+    /* Кнопка удаления стока */
+    .delete-stock-btn {
+        display: block;
+        width: 100%;
+        background: #dc3545;
+        color: white;
+        padding: 12px;
+        border-radius: 15px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 10px;
+    }
+    
+    .delete-stock-btn:hover {
+        background: #c82333;
+    }
+    
+    .delete-stock-form {
+        margin-top: 10px;
+    }
+    
+    /* Кнопка добавить сток */
+    .add-stock-btn {
+        display: block;
+        width: 100%;
+        padding: 15px;
+        border-radius: 20px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: 500;
+        background: rgba(255, 255, 255, 0.5);
+        color: #333;
+        border: 1px solid #B58358;
+        margin-top: 20px;
+        transition: all 0.2s ease;
+    }
+    
+    .add-stock-btn:hover {
+        background: rgba(255, 255, 255, 0.7);
+    }
+    
+    @media (min-width: 768px) {
+        .stock-detail-container {
+            max-width: 600px;
+            padding-top: 90px;
+        }
+        
+        .stock-main-card .amount {
+            font-size: 52px;
+        }
+        
+        .stock-info-card .number {
+            font-size: 40px;
+        }
+    }
+
+    .category-filter-bar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+        justify-content: center;
+    }
+
+    .cat-btn {
+        padding: 7px 14px;
+        border-radius: 20px;
+        border: 2px solid #B58358;
+        background: transparent;
+        color: #B58358;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.18s, color 0.18s;
+        outline: none;
+    }
+
+    .cat-btn.active {
+        background: #B58358;
+        color: #fff;
+    }
+
+    .category-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        background: rgba(181, 131, 88, 0.15);
+        color: #B58358;
+    }
+</style>
+
+<!-- Иконка - фиксированная -->
+<div class="logo-icon">
+    <a href="{{ url_for('main') }}">
+        <img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo">
+    </a>
+</div>
+
+<div class="stock-detail-container">
+    <!-- Фильтр города -->
+    <div class="city-filter-bar">
+        Сток {{ city.name }}
+    </div>
+    
+    <!-- Большая карточка с суммой (только для админа и не для комиссионного стока) -->
+    {% if is_admin and stock_type != 'commission' %}
+    <a href="#stock-items" class="stock-main-card">
+        <div class="amount">{{ "%.0f"|format(total_invested) }}$</div>
+        <div class="label">Сумма реализуемых изделий</div>
+    </a>
+    {% endif %}
+    
+    <!-- Две маленькие карточки -->
+    <div class="stock-info-cards">
+        <a href="#stock-items" class="stock-info-card">
+            <div class="number">{{ stock_positions }}</div>
+            <div class="label">Позиций в стоке</div>
+        </a>
+        {% if is_admin %}
+        <a href="#stock-items" class="stock-info-card">
+            <div class="number">{{ "%.0f"|format(expected_profit) }}$</div>
+            <div class="label">Ожидаемая прибыль</div>
+        </a>
+        {% endif %}
+    </div>
+    
+    <!-- Заголовок секции -->
+    <h2 class="section-header" id="stock-items">Стоковые позиции</h2>
+
+    <!-- Фильтр по категориям -->
+    <div class="category-filter-bar">
+        <button class="cat-btn active" data-cat="watches">Часы</button>
+        <button class="cat-btn active" data-cat="jewelry">Ювелирные</button>
+        <button class="cat-btn active" data-cat="bags">Сумки</button>
+        <button class="cat-btn active" data-cat="accessories">Аксессуары</button>
+        <button class="cat-btn active" data-cat="">Без категории</button>
+    </div>
+    
+    <!-- Карточки товаров -->
+    {% for item in stock_items %}
+    <div class="stock-item-card" data-category="{{ item.category or '' }}">
+        {% if stock_type == 'general' and item.komissionnyy %}
+        <div class="commission-badge-wrapper">
+            <span class="commission-badge">Комиссионная реализация</span>
+        </div>
+        {% endif %}
+        {% if item.id in (pending_sale_stock_ids or []) %}
+        <div class="commission-badge-wrapper">
+            <span class="pending-badge">На подтверждении</span>
+        </div>
+        {% endif %}
+        <div class="stock-item-image-wrapper">
+            {% if item.photo %}
+                <img src="{{ url_for('uploaded_file', filename=item.photo) }}" alt="{{ item.product_name }}" class="stock-item-image">
+            {% else %}
+                <div class="stock-item-image" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 15px;">
+                    Нет фото
+                </div>
+            {% endif %}
+        </div>
+
+        {% if item.category %}
+        <div class="stock-item-field">
+            <span class="stock-item-label">Категория</span>
+            <span class="stock-item-value category-badge">
+                {% if item.category == 'watches' %}Часы
+                {% elif item.category == 'jewelry' %}Ювелирные изделия
+                {% elif item.category == 'bags' %}Сумки
+                {% elif item.category == 'accessories' %}Аксессуары
+                {% else %}{{ item.category }}{% endif %}
+            </span>
+        </div>
+        {% endif %}
+        
+        {% if item.item_year %}
+        <div class="stock-item-field">
+            <span class="stock-item-label">Год изделия</span>
+            <span class="stock-item-value">{{ item.item_year }}</span>
+        </div>
+        {% endif %}
+        
+        <div class="stock-item-field">
+            <span class="stock-item-label">Город</span>
+            <span class="stock-item-value">{{ item.city.name }}</span>
+        </div>
+        
+        {% if stock_type == 'commission' or item.komissionnyy %}
+        <!-- Для комиссионного стока: инвестор или клиент -->
+        {% if item.investor %}
+        <!-- Комиссионный с инвестором -->
+        <div class="stock-item-field">
+            <span class="stock-item-label">{% if item.investor.is_commission_client %}Комиссионный клиент{% else %}Инвестор{% endif %}</span>
+            <span class="stock-item-value">{{ item.investor.name }}</span>
+        </div>
+        {% else %}
+        <!-- Комиссионный с клиентом -->
+        {% if item.client_full_name %}
+        <div class="stock-item-field">
+            <span class="stock-item-label">Клиент</span>
+            <span class="stock-item-value">{{ item.client_full_name }}</span>
+        </div>
+        {% endif %}
+        {% if item.client_phone %}
+        <div class="stock-item-field" style="padding-left: 15px;">
+            <span class="stock-item-label">Телефон</span>
+            <span class="stock-item-value">{{ item.client_phone }}</span>
+        </div>
+        {% endif %}
+        {% if item.client_instagram %}
+        <div class="stock-item-field" style="padding-left: 15px;">
+            <span class="stock-item-label">Instagram</span>
+            <span class="stock-item-value">{{ item.client_instagram }}</span>
+        </div>
+        {% endif %}
+        {% if item.client_telegram %}
+        <div class="stock-item-field" style="padding-left: 15px;">
+            <span class="stock-item-label">Telegram</span>
+            <span class="stock-item-value">{{ item.client_telegram }}</span>
+        </div>
+        {% endif %}
+        {% if item.client_email %}
+        <div class="stock-item-field" style="padding-left: 15px;">
+            <span class="stock-item-label">Почта</span>
+            <span class="stock-item-value">{{ item.client_email }}</span>
+        </div>
+        {% endif %}
+        {% endif %}
+        
+        {% if session.get('is_admin', False) %}
+        <div class="stock-item-field">
+            <span class="stock-item-label">Выплата</span>
+            <span class="stock-item-price">{% if item.buy_price is not none %}{{ "%.0f"|format(item.buy_price) }}${% else %}—{% endif %}</span>
+        </div>
+        {% endif %}
+        {% else %}
+        <!-- Для общего стока: инвестор и покупка -->
+        {% if item.investor %}
+        <div class="stock-item-field">
+            <span class="stock-item-label">Owner</span>
+            <span class="stock-item-value">{{ item.investor.name }}</span>
+        </div>
+        {% endif %}
+        
+        {% if session.get('is_admin', False) %}
+        <div class="stock-item-field">
+            <span class="stock-item-label">Покупка</span>
+            <span class="stock-item-price">{% if item.buy_price is not none %}{{ "%.0f"|format(item.buy_price) }}${% else %}—{% endif %}</span>
+        </div>
+        {% endif %}
+        {% endif %}
+        
+        <div class="stock-item-field">
+            <span class="stock-item-label">Выставлено</span>
+            <span class="stock-item-price">{{ "%.0f"|format(item.expected_sell_price) }}$</span>
+        </div>
+        
+        {% if item.komplektatsiya %}
+        <div class="stock-item-field">
+            <span class="stock-item-label">Комплектация</span>
+            <span class="stock-item-value">{{ item.komplektatsiya }}</span>
+        </div>
+        {% endif %}
+        
+        {% if session.get('is_admin', False) %}
+        <div class="profit-card">
+            <div class="stock-item-field">
+                <span class="stock-item-label">Ожидаемая прибыль</span>
+                <span class="stock-item-price">{{ "%.0f"|format(item.expected_profit) }}$</span>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if item.comment %}
+        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1);">
+            <div class="stock-item-label" style="margin-bottom: 5px;">Комментарий</div>
+            <div style="white-space: pre-wrap; color: #333; font-size: 14px; line-height: 1.5;">{{ item.comment }}</div>
+        </div>
+        {% endif %}
+        
+        <div class="stock-item-actions">
+            <a href="{{ url_for('edit_stock', stock_id=item.id) }}" class="action-btn action-btn-primary">Изменить</a>
+            <a href="{{ url_for('add_sale', stock_id=item.id) }}" class="action-btn action-btn-secondary">Продать позицию</a>
+        </div>
+        
+        {% if session.get('is_admin', False) %}
+        <form method="POST" action="{{ url_for('delete_stock', stock_id=item.id) }}" class="delete-stock-form" onsubmit="return confirm('Вы уверены, что хотите удалить эту позицию из стока?');">
+            <button type="submit" class="delete-stock-btn">Удалить</button>
+        </form>
+        {% endif %}
+    </div>
+    {% endfor %}
+    
+    {% if not stock_items %}
+    <div class="stock-item-card" style="text-align: center; padding: 40px 20px;">
+        <p style="color: #666; font-size: 16px;">Нет товаров в стоке для этого города</p>
+    </div>
+    {% endif %}
+    
+    <!-- Кнопка добавить сток -->
+    <a href="{{ url_for('add_stock') }}" class="add-stock-btn">Добавить сток</a>
+</div>
+
+<script>
+(function() {
+    const activeCats = new Set(['watches', 'jewelry', 'bags', 'accessories', '']);
+
+    function applyFilter() {
+        document.querySelectorAll('.stock-item-card[data-category]').forEach(function(card) {
+            const cat = card.dataset.category || '';
+            card.style.display = activeCats.has(cat) ? '' : 'none';
+        });
+    }
+
+    document.querySelectorAll('.cat-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const cat = btn.dataset.cat;
+            if (activeCats.has(cat)) {
+                activeCats.delete(cat);
+                btn.classList.remove('active');
+            } else {
+                activeCats.add(cat);
+                btn.classList.add('active');
+            }
+            applyFilter();
+        });
+    });
+})();
+</script>
+{% endblock %}

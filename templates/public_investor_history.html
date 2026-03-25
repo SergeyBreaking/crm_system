@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>История продаж — {{ investor.name }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #F7F3EC;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-top: 150px;
+        }
+
+        .logo-icon {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .logo-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .page-title {
+            background: rgba(255, 255, 255, 0.5);
+            padding: 12px 24px;
+            border-radius: 43px;
+            text-align: center;
+            font-size: 17px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .readonly-notice {
+            background: rgba(181, 131, 88, 0.12);
+            border: 1px solid rgba(181, 131, 88, 0.3);
+            border-radius: 15px;
+            padding: 12px 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #8b6840;
+            margin-bottom: 20px;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 18px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .back-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: #514D4A;
+            color: white;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            margin-bottom: 25px;
+            transition: background 0.2s;
+        }
+        .back-btn:hover { background: #3d3a38; }
+
+        .section-header {
+            font-size: 18px;
+            font-weight: 500;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .sale-card {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .sale-image-wrapper {
+            padding: 15px;
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            min-height: 240px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sale-image {
+            width: 100%;
+            object-fit: contain;
+            display: block;
+            border-radius: 10px;
+        }
+
+        .sale-name {
+            font-size: 17px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .sale-field {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 9px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .sale-field:last-of-type { border-bottom: none; }
+
+        .sale-label {
+            font-size: 14px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .sale-value {
+            font-size: 14px;
+            color: #333;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 4px 12px;
+            border-radius: 15px;
+        }
+
+        .sale-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: #B58358;
+            background: rgba(181, 131, 88, 0.1);
+            padding: 4px 12px;
+            border-radius: 15px;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(181, 131, 88, 0.15);
+            color: #B58358;
+        }
+
+        .empty-card {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            padding: 40px 20px;
+            text-align: center;
+            color: #999;
+            font-size: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .container { max-width: 600px; padding-top: 90px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="logo-icon">
+    <img src="{{ logo_url }}" alt="Logo">
+</div>
+
+<div class="container">
+    <div class="page-title">История продаж — {{ investor.name }}</div>
+
+    <div class="readonly-notice">👁 Страница только для просмотра</div>
+
+    {% if sold_sales %}
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="number">{{ sold_sales | length }}</div>
+            <div class="label">Продаж всего</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">{{ "%.0f"|format(sold_sales | sum(attribute='sell_price')) }}$</div>
+            <div class="label">Общая выручка</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <a href="{{ stock_url }}" class="back-btn">← Вернуться к стоку</a>
+
+    <h2 class="section-header">Реализованные позиции</h2>
+
+    {% for sale in sold_sales %}
+    <div class="sale-card">
+        <div class="sale-image-wrapper">
+            {% if sale.photo %}
+                <img src="{{ url_for('uploaded_file', filename=sale.photo) }}" alt="{{ sale.product_name }}" class="sale-image">
+            {% else %}
+                <div style="color: #bbb; font-size: 15px;">Нет фото</div>
+            {% endif %}
+        </div>
+
+        {% if sale.category %}
+        <div class="sale-field">
+            <span class="sale-label">Категория</span>
+            <span class="category-badge">
+                {% if sale.category == 'watches' %}Часы
+                {% elif sale.category == 'jewelry' %}Ювелирные изделия
+                {% elif sale.category == 'bags' %}Сумки
+                {% elif sale.category == 'accessories' %}Аксессуары
+                {% else %}{{ sale.category }}{% endif %}
+            </span>
+        </div>
+        {% endif %}
+
+        <div class="sale-name">{{ sale.product_name }}</div>
+
+        {% if sale.reference %}
+        <div class="sale-field">
+            <span class="sale-label">Reference</span>
+            <span class="sale-value">{{ sale.reference }}</span>
+        </div>
+        {% endif %}
+
+        {% if sale.item_year %}
+        <div class="sale-field">
+            <span class="sale-label">Год изделия</span>
+            <span class="sale-value">{{ sale.item_year }}</span>
+        </div>
+        {% endif %}
+
+        <div class="sale-field">
+            <span class="sale-label">Город</span>
+            <span class="sale-value">{{ sale.city.name }}</span>
+        </div>
+
+        <div class="sale-field">
+            <span class="sale-label">Продавец</span>
+            <span class="sale-value">{{ sale.employee.name }}</span>
+        </div>
+
+        {% if sale.komplektatsiya %}
+        <div class="sale-field">
+            <span class="sale-label">Комплектация</span>
+            <span class="sale-value">{{ sale.komplektatsiya }}</span>
+        </div>
+        {% endif %}
+
+        <div class="sale-field">
+            <span class="sale-label">Цена продажи</span>
+            <span class="sale-price">{{ "%.0f"|format(sale.sell_price) }}$</span>
+        </div>
+
+        <div class="sale-field">
+            <span class="sale-label">Дата продажи</span>
+            <span class="sale-value">
+                {% set d = sale.date.date() if sale.date.date is defined else sale.date %}
+                {{ sale.date.strftime('%d.%m.%Y') }}
+            </span>
+        </div>
+
+        {% if sale.comment %}
+        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.08);">
+            <div class="sale-label" style="margin-bottom: 5px;">Комментарий</div>
+            <div style="white-space: pre-wrap; color: #555; font-size: 14px; line-height: 1.5;">{{ sale.comment }}</div>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    {% if not sold_sales %}
+    <div class="empty-card">Продаж по этому инвестору пока нет</div>
+    {% endif %}
+
+</div>
+</body>
+</html>

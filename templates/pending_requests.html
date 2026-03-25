@@ -1,0 +1,1349 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .requests-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;
+    }
+    
+    .requests-header {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 24px;
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .request-section {
+        margin-bottom: 40px;
+    }
+    
+    .section-title {
+        font-size: 20px;
+        font-weight: 500;
+        color: #514D4A;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #514D4A;
+    }
+    
+    .request-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .request-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .request-type {
+        font-size: 16px;
+        font-weight: 600;
+        color: #514D4A;
+    }
+    
+    .request-id {
+        font-size: 14px;
+        color: #999;
+    }
+    
+    .request-image-wrapper {
+        padding: 15px;
+        background: white;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .request-image {
+        width: 100%;
+        max-width: 600px;
+        height: auto;
+        object-fit: contain;
+        object-position: center;
+        display: block;
+        background: #f8f8f8;
+        border-radius: 15px;
+    }
+    
+    .request-info {
+        margin-bottom: 15px;
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .info-label {
+        font-weight: 500;
+        color: #666;
+    }
+    
+    .info-value {
+        color: #333;
+        text-align: right;
+    }
+    
+    .expenses-list {
+        margin: 15px 0;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 10px;
+    }
+    
+    .expense-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+        font-size: 14px;
+    }
+    
+    .complete-stock-form .complete-fields {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+    }
+    @media (max-width: 600px) {
+        .complete-stock-form .complete-fields {
+            flex-direction: column;
+        }
+        .complete-stock-form .complete-fields input,
+        .complete-stock-form .complete-fields select,
+        .complete-stock-form .complete-fields button {
+            width: 100%;
+        }
+    }
+    
+    .request-actions {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 20px;
+        align-items: center;
+        width: 100%;
+    }
+    .request-actions .complete-sale-box {
+        width: 100%;
+    }
+    .request-actions-bonus-row {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+    }
+    .request-actions-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        align-items: center;
+    }
+    .request-actions-buttons .action-btn,
+    .request-actions-buttons form {
+        flex: 0 1 auto;
+    }
+    .request-actions-buttons form {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .complete-sale-box {
+        width: 100%;
+        padding: 14px 16px;
+        background: rgba(181, 131, 88, 0.12);
+        border-radius: 12px;
+        border: 1px solid rgba(181, 131, 88, 0.3);
+        margin-bottom: 4px;
+    }
+    .complete-sale-box .complete-sale-label {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 10px;
+        display: block;
+    }
+    .complete-sale-box .complete-fields {
+        display: flex;
+        gap: 10px;
+        align-items: stretch;
+        flex-wrap: wrap;
+    }
+    .complete-sale-box .complete-fields input,
+    .complete-sale-box .complete-fields select {
+        flex: 1;
+        min-width: 140px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        font-size: 15px;
+        box-sizing: border-box;
+        height: 44px;
+    }
+    .complete-sale-box .complete-fields select {
+        min-width: 150px;
+    }
+    .complete-sale-box .complete-fields button[type="submit"] {
+        white-space: nowrap;
+        min-height: 44px;
+    }
+    .action-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .action-btn {
+        flex: 1;
+        padding: 12px 20px;
+        border-radius: 10px;
+        border: none;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        text-align: center;
+        transition: background 0.2s ease;
+    }
+    
+    .approve-btn {
+        background: #28a745;
+        color: white;
+    }
+    
+    .approve-btn:hover {
+        background: #218838;
+    }
+    
+    .reject-btn {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .reject-btn:hover {
+        background: #c82333;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #999;
+        font-size: 16px;
+    }
+
+    /* Кнопка добавить инвестора */
+    .add-investor-btn {
+        background: #B58358;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 20px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        display: block;
+        width: 100%;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+    }
+    .add-investor-btn:hover {
+        background: #9a6d47;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .collapsible-form {
+        display: none;
+        background: rgba(255,255,255,0.5);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .collapsible-form.active { display: block; }
+    .collapsible-form .field-input-card {
+        background: rgba(255,255,255,0.7);
+        border-radius: 16px;
+        margin-bottom: 12px;
+        overflow: hidden;
+    }
+    .collapsible-form .field-label {
+        font-size: 14px;
+        color: #888;
+        display: block;
+        padding: 10px 16px 4px;
+    }
+    .collapsible-form .field-input-wrapper {
+        padding: 4px 16px 12px;
+    }
+    .collapsible-form .field-input-wrapper input {
+        width: 100%;
+        border: none;
+        background: transparent;
+        font-size: 15px;
+        color: #333;
+        outline: none;
+    }
+    .collapsible-form-btn {
+        width: 100%;
+        background: #B58358;
+        color: white;
+        padding: 12px;
+        border-radius: 15px;
+        font-size: 15px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        margin-top: 5px;
+    }
+    /* Тумблер комиссионный клиент */
+    .pr-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        background: rgba(255,255,255,0.7);
+        border-radius: 16px;
+    }
+    .pr-toggle-label { font-size: 15px; color: #333; }
+    .pr-toggle-switch { position: relative; width: 52px; height: 28px; flex-shrink: 0; }
+    .pr-toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .pr-toggle-slider {
+        position: absolute; cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: #ccc; border-radius: 28px; transition: 0.3s;
+    }
+    .pr-toggle-slider:before {
+        position: absolute; content: "";
+        height: 20px; width: 20px; left: 4px; bottom: 4px;
+        background: white; border-radius: 50%; transition: 0.3s;
+    }
+    .pr-toggle-switch input:checked + .pr-toggle-slider { background: #8FD16A; }
+    .pr-toggle-switch input:checked + .pr-toggle-slider:before { transform: translateX(24px); }
+
+    @media (min-width: 768px) {
+        .requests-container {
+            max-width: 700px;
+            padding-top: 90px;
+        }
+    }
+</style>
+
+<div class="requests-container">
+    <h1 class="requests-header">Заявки на подтверждение</h1>
+
+    {% if is_admin %}
+    <!-- Кнопка добавить инвестора -->
+    <button type="button" class="add-investor-btn" onclick="toggleInvestorForm()">Добавить инвестора</button>
+    <div id="investor-form" class="collapsible-form">
+        <form method="POST" action="{{ url_for('add_investor') }}">
+            <div class="field-input-card">
+                <label class="field-label">Псевдоним / Имя <span style="color:#B58358">*</span></label>
+                <div class="field-input-wrapper">
+                    <input type="text" name="name" required placeholder="Короткое имя для идентификации">
+                </div>
+            </div>
+            <div class="field-input-card">
+                <label class="field-label">ФИО</label>
+                <div class="field-input-wrapper">
+                    <input type="text" name="full_name" placeholder="Полное имя инвестора">
+                </div>
+            </div>
+            <div class="field-input-card">
+                <label class="field-label">Телефон</label>
+                <div class="field-input-wrapper">
+                    <input type="text" name="phone" placeholder="+7...">
+                </div>
+            </div>
+            <div class="field-input-card">
+                <label class="field-label">Почта</label>
+                <div class="field-input-wrapper">
+                    <input type="email" name="email" placeholder="example@mail.com">
+                </div>
+            </div>
+            <div class="pr-toggle-row">
+                <span class="pr-toggle-label">Комиссионный клиент</span>
+                <label class="pr-toggle-switch">
+                    <input type="checkbox" name="is_commission_client" value="1">
+                    <span class="pr-toggle-slider"></span>
+                </label>
+            </div>
+            <button type="submit" class="collapsible-form-btn">Добавить инвестора</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Заявки на продажу -->
+    <div class="request-section">
+        <h2 class="section-title">📦 К ПРОДАЖЕ</h2>
+        {% if pending_sales %}
+            {% for sale in pending_sales %}
+                {% set expenses = sale.expenses_data if sale.expenses_data else [] %}
+                {% set ns = namespace(total_expenses=0, extra_bonuses_total=0) %}
+                {% if expenses %}
+                    {% for exp in expenses %}
+                        {% set ns.total_expenses = ns.total_expenses + exp.amount %}
+                    {% endfor %}
+                {% endif %}
+                {% for ab in sale.additional_bonuses %}
+                    {% set ns.extra_bonuses_total = ns.extra_bonuses_total + ab.amount %}
+                {% endfor %}
+            {% set sale_murad_bonus = (sale.murad_bonus | default(0)) | float %}
+            <div class="request-card" data-sale-id="{{ sale.id }}" data-current-bonus="{{ sale.bonus if sale.bonus else 0 }}" data-murad-bonus="{{ sale_murad_bonus }}" data-extra-bonus-total="{{ ns.extra_bonuses_total }}" data-sell-price="{{ sale.sell_price }}" data-buy-price="{{ sale.buy_price if (sale.buy_price is not none and sale.buy_price != 0) else '' }}" data-total-expenses="{{ ns.total_expenses }}">
+                <div class="request-card-header">
+                    <span class="request-type">К ПРОДАЖЕ</span>
+                    <span class="request-id">ID: {{ sale.id }}</span>
+                </div>
+                
+                {% if sale.photo %}
+                <div class="request-image-wrapper">
+                    <img src="{{ url_for('uploaded_file', filename=sale.photo) }}" alt="Фото" class="request-image">
+                </div>
+                {% else %}
+                <div class="request-image-wrapper">
+                    <div class="request-image" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 15px;">
+                        Нет фото
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="request-info">
+                    <div class="info-row">
+                        <span class="info-label">Товар:</span>
+                        <span class="info-value">{{ sale.product_name }}</span>
+                    </div>
+                    {% if sale.reference %}
+                    <div class="info-row">
+                        <span class="info-label">Референс:</span>
+                        <span class="info-value">{{ sale.reference }}</span>
+                    </div>
+                    {% endif %}
+                    {% if sale.item_year %}
+                    <div class="info-row">
+                        <span class="info-label">Год изделия:</span>
+                        <span class="info-value">{{ sale.item_year }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="info-row">
+                        <span class="info-label">Комиссионный:</span>
+                        <span class="info-value">{% if sale.komissionnyy %}да{% else %}нет{% endif %}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Цена покупки:</span>
+                        <span class="info-value">{% if sale.buy_price is not none and sale.buy_price != 0 %}{{ "%.2f"|format(sale.buy_price) }}${% else %}<em>— допишет админ на сайте или в боте</em>{% endif %}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Цена продажи:</span>
+                        <span class="info-value">{{ "%.2f"|format(sale.sell_price) }}$</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Город:</span>
+                        <span class="info-value">{{ sale.city.name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Сотрудник:</span>
+                        <span class="info-value">{{ sale.employee.name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">{% if sale.investor and sale.investor.is_commission_client %}Комиссионный клиент:{% else %}Инвестор:{% endif %}</span>
+                        <span class="info-value">{% if sale.investor %}{{ sale.investor.name }}{% else %}<em>— не указан</em>{% endif %}</span>
+                    </div>
+                    {% if sale.client %}
+                    <div class="info-row">
+                        <span class="info-label">Клиент:</span>
+                        <span class="info-value">{{ sale.client.full_name }}</span>
+                    </div>
+                    {% for label, val in sale.client.display_contacts() %}
+                    <div class="info-row" style="padding-left: 15px;">
+                        <span class="info-label">{{ label }}:</span>
+                        <span class="info-value">{{ val }}</span>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    <div class="info-row">
+                        <span class="info-label">Дата:</span>
+                        <span class="info-value">{{ sale.date.strftime('%d.%m.%Y %H:%M') if sale.date else 'Не указана' }}</span>
+                    </div>
+                </div>
+                {% if expenses %}
+                <div class="expenses-list">
+                    <strong>Расходы:</strong>
+                    {% for exp in expenses %}
+                    <div class="expense-item">
+                        <span>{{ exp.expense_type.name }}: {{ "%.2f"|format(exp.amount) }}$</span>
+                        {% if exp.comment %}
+                        <span style="color: #999; font-size: 12px;">{{ exp.comment }}</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <div class="expense-item" style="font-weight: 600; border-top: 1px solid #ddd; padding-top: 5px; margin-top: 5px;">
+                        <span>Итого расходов:</span>
+                        <span>{{ "%.2f"|format(ns.total_expenses) }}$</span>
+                    </div>
+                    {% if sale.bonus and sale.bonus > 0 %}
+                    <div class="expense-item manager-bonus-display" id="manager-bonus-{{ sale.id }}" style="font-weight: 500; color: #666;">
+                        <span>Бонус менеджера:</span>
+                        <span id="manager-bonus-amount-{{ sale.id }}">{{ "%.2f"|format(sale.bonus) }}$</span>
+                    </div>
+                    {% else %}
+                    <div class="expense-item manager-bonus-display" id="manager-bonus-{{ sale.id }}" style="font-weight: 500; color: #666; display: none;">
+                        <span>Бонус менеджера:</span>
+                        <span id="manager-bonus-amount-{{ sale.id }}">0.00$</span>
+                    </div>
+                    {% endif %}
+                    {% if sale_murad_bonus and sale_murad_bonus > 0 %}
+                    <div class="expense-item" style="font-weight: 500; color: #666;">
+                        <span>Бонус Мурада:</span>
+                        <span>{{ "%.2f"|format(sale_murad_bonus) }}$</span>
+                    </div>
+                    {% endif %}
+                    {% for ab in sale.additional_bonuses %}
+                    <div class="expense-item extra-bonus-item" style="font-weight: 500; color: #666;" data-extra-id="{{ ab.id }}" data-extra-amount="{{ ab.amount }}">
+                        <span>Доп бонус ({{ ab.employee.name if ab.employee else '' }}):</span>
+                        <span>{{ "%.2f"|format(ab.amount) }}$</span>
+                        <button type="button" class="remove-extra-bonus-btn" data-sale-id="{{ sale.id }}" data-bonus-id="{{ ab.id }}" title="Удалить" style="margin-left: 8px; padding: 2px 8px; font-size: 12px; border: 1px solid #ccc; border-radius: 6px; background: #fff; cursor: pointer;">✕</button>
+                    </div>
+                    {% endfor %}
+                    <div class="expense-item" style="font-weight: 600; color: #28a745;">
+                        <span>Прибыль:</span>
+                        <span id="profit-{{ sale.id }}">{% if sale.buy_price is not none and sale.buy_price != 0 %}{{ "%.2f"|format(sale.sell_price - sale.buy_price - ns.total_expenses - (sale.bonus if sale.bonus else 0) - sale_murad_bonus - ns.extra_bonuses_total) }}${% else %}— (укажите цену покупки ниже){% endif %}</span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="expenses-list">
+                    {% if sale.bonus and sale.bonus > 0 %}
+                    <div class="expense-item manager-bonus-display" id="manager-bonus-no-expenses-{{ sale.id }}" style="font-weight: 500; color: #666;">
+                        <span>Бонус менеджера:</span>
+                        <span id="manager-bonus-amount-no-expenses-{{ sale.id }}">{{ "%.2f"|format(sale.bonus) }}$</span>
+                    </div>
+                    {% else %}
+                    <div class="expense-item manager-bonus-display" id="manager-bonus-no-expenses-{{ sale.id }}" style="font-weight: 500; color: #666; display: none;">
+                        <span>Бонус менеджера:</span>
+                        <span id="manager-bonus-amount-no-expenses-{{ sale.id }}">0.00$</span>
+                    </div>
+                    {% endif %}
+                    {% if sale_murad_bonus and sale_murad_bonus > 0 %}
+                    <div class="expense-item" style="font-weight: 500; color: #666;">
+                        <span>Бонус Мурада:</span>
+                        <span>{{ "%.2f"|format(sale_murad_bonus) }}$</span>
+                    </div>
+                    {% endif %}
+                    {% for ab in sale.additional_bonuses %}
+                    <div class="expense-item extra-bonus-item" style="font-weight: 500; color: #666;" data-extra-id="{{ ab.id }}" data-extra-amount="{{ ab.amount }}">
+                        <span>Доп бонус ({{ ab.employee.name if ab.employee else '' }}):</span>
+                        <span>{{ "%.2f"|format(ab.amount) }}$</span>
+                        <button type="button" class="remove-extra-bonus-btn" data-sale-id="{{ sale.id }}" data-bonus-id="{{ ab.id }}" title="Удалить" style="margin-left: 8px; padding: 2px 8px; font-size: 12px; border: 1px solid #ccc; border-radius: 6px; background: #fff; cursor: pointer;">✕</button>
+                    </div>
+                    {% endfor %}
+                    <div class="expense-item" style="font-weight: 600; color: #28a745;">
+                        <span>Прибыль:</span>
+                        <span id="profit-{{ sale.id }}">{% if sale.buy_price is not none and sale.buy_price != 0 %}{{ "%.2f"|format(sale.sell_price - sale.buy_price - (sale.bonus if sale.bonus else 0) - sale_murad_bonus - ns.extra_bonuses_total) }}${% else %}— (укажите цену покупки ниже){% endif %}</span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="request-actions">
+                    {% if not is_top_manager %}
+                    {% if sale.buy_price is none or sale.buy_price == 0 %}
+                    <div class="complete-sale-box">
+                        <span class="complete-sale-label">Укажите цену покупки и при желании инвестора:</span>
+                        <form method="POST" action="{{ url_for('complete_sale_request', pending_sale_id=sale.id) }}" class="complete-sale-form" style="margin: 0;">
+                            <div class="complete-fields">
+                                <input type="number" step="0.01" name="buy_price" placeholder="Цена покупки ($)" value="{{ sale.buy_price if sale.buy_price else '' }}" required min="0.01" style="padding: 10px 12px; border-radius: 8px; border: 1px solid #ddd; min-width: 120px; flex: 1; box-sizing: border-box; height: 44px;">
+                                <select name="investor_id" style="padding: 10px 12px; border-radius: 8px; border: 1px solid #ddd; min-width: 150px; flex: 1; box-sizing: border-box; height: 44px;">
+                                    <option value="">— Без инвестора —</option>
+                                    {% for inv in investors %}
+                                    <option value="{{ inv.id }}" {% if sale.investor_id == inv.id %}selected{% endif %}>{{ inv.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="action-btn approve-btn" style="min-height: 44px; flex-shrink: 0; white-space: nowrap;">✏️ Дополнить заявку</button>
+                            </div>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="complete-sale-box" style="margin-bottom: 12px;">
+                        <span class="complete-sale-label">Инвестор: пропустить или указать</span>
+                        <form method="POST" action="{{ url_for('complete_sale_request', pending_sale_id=sale.id) }}" class="complete-sale-form" style="margin: 0;">
+                            <input type="hidden" name="buy_price" value="{{ sale.buy_price }}">
+                            <div class="complete-fields">
+                                <select name="investor_id" style="padding: 10px 12px; border-radius: 8px; border: 1px solid #ddd; min-width: 180px; flex: 1; box-sizing: border-box; height: 44px;">
+                                    <option value="">— Без инвестора —</option>
+                                    {% for inv in investors %}
+                                    <option value="{{ inv.id }}" {% if sale.investor_id == inv.id %}selected{% endif %}>{{ inv.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="action-btn" style="min-height: 44px; flex-shrink: 0; white-space: nowrap; background: #6c757d; color: white;">Сохранить выбор</button>
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
+                    <div class="request-actions-bonus-row">
+                        {% if sale.bonus and sale.bonus > 0 %}
+                        <div class="current-bonus-display" style="display: inline-flex; align-items: center; padding: 12px 16px; background: #f5f5f5; border-radius: 10px; font-size: 14px;">
+                            <strong>Текущий бонус:</strong> {{ "%.2f"|format(sale.bonus) }}$
+                        </div>
+                        {% endif %}
+                        <div class="request-actions-buttons">
+                            <button type="button" onclick="showBonusModal({{ sale.id }})" class="action-btn" style="background: #B58358; color: white; min-width: 140px;">💰 Добавить бонус</button>
+                            <button type="button" onclick="showExtraBonusModal({{ sale.id }})" class="action-btn" style="background: #6c757d; color: white; min-width: 140px;">➕ Доп бонус (др. менеджер)</button>
+                            <form method="POST" action="{{ url_for('approve_sale_request', pending_sale_id=sale.id) }}" id="approve-form-{{ sale.id }}">
+                                <input type="hidden" name="bonus" id="bonus-hidden-{{ sale.id }}" value="{{ sale.bonus if sale.bonus else 0 }}">
+                                <button type="submit" class="action-btn approve-btn" {% if sale.buy_price is none or sale.buy_price == 0 %}disabled title="Сначала укажите цену покупки выше"{% endif %}>✅ Принять</button>
+                                <button type="submit" formaction="{{ url_for('reject_sale_request', pending_sale_id=sale.id) }}" class="action-btn reject-btn">❌ Отклонить</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">Нет заявок на продажу</div>
+        {% endif %}
+    </div>
+    
+    <!-- Заявки на общий сток -->
+    <div class="request-section">
+        <h2 class="section-title">📦 К СТОКУ</h2>
+        {% if pending_stocks %}
+            {% for stock in pending_stocks %}
+            <div class="request-card">
+                <div class="request-card-header">
+                    <span class="request-type">К СТОКУ</span>
+                    <span class="request-id">ID: {{ stock.id }}</span>
+                </div>
+                
+                {% if stock.photo %}
+                <div class="request-image-wrapper">
+                    <img src="{{ url_for('uploaded_file', filename=stock.photo) }}" alt="Фото" class="request-image">
+                </div>
+                {% else %}
+                <div class="request-image-wrapper">
+                    <div class="request-image" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 15px;">
+                        Нет фото
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="request-info">
+                    <div class="info-row">
+                        <span class="info-label">Товар:</span>
+                        <span class="info-value">{{ stock.product_name }}</span>
+                    </div>
+                    {% if stock.reference %}
+                    <div class="info-row">
+                        <span class="info-label">Референс:</span>
+                        <span class="info-value">{{ stock.reference }}</span>
+                    </div>
+                    {% endif %}
+                    {% if stock.item_year %}
+                    <div class="info-row">
+                        <span class="info-label">Год изделия:</span>
+                        <span class="info-value">{{ stock.item_year }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="info-row">
+                        <span class="info-label">Комиссионный:</span>
+                        <span class="info-value">{% if stock.komissionnyy %}да{% else %}нет{% endif %}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Цена покупки:</span>
+                        <span class="info-value">{% if stock.buy_price is not none %}{{ "%.2f"|format(stock.buy_price) }}${% else %}<em>— допишет админ</em>{% endif %}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Ожидаемая цена продажи:</span>
+                        <span class="info-value">{{ "%.2f"|format(stock.expected_sell_price) }}$</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Количество:</span>
+                        <span class="info-value">{{ stock.quantity }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Город:</span>
+                        <span class="info-value">{{ stock.city.name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">{% if stock.investor and stock.investor.is_commission_client %}Комиссионный клиент:{% else %}Инвестор:{% endif %}</span>
+                        <span class="info-value">{% if stock.investor %}{{ stock.investor.name }}{% else %}<em>— выберет админ</em>{% endif %}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Дата:</span>
+                        <span class="info-value">{{ stock.created_at.strftime('%d.%m.%Y %H:%M') if stock.created_at else 'Не указана' }}</span>
+                    </div>
+                </div>
+                
+                {% set expenses = stock.expenses_data %}
+                {% if expenses %}
+                <div class="expenses-list">
+                    <strong>Расходы:</strong>
+                    {% set ns = namespace(total_expenses=0) %}
+                    {% for exp in expenses %}
+                    <div class="expense-item">
+                        <span>{{ exp.expense_type.name }}: {{ "%.2f"|format(exp.amount) }}$</span>
+                        {% if exp.comment %}
+                        <span style="color: #999; font-size: 12px;">{{ exp.comment }}</span>
+                        {% endif %}
+                    </div>
+                    {% set ns.total_expenses = ns.total_expenses + exp.amount %}
+                    {% endfor %}
+                    <div class="expense-item" style="font-weight: 600; border-top: 1px solid #ddd; padding-top: 5px; margin-top: 5px;">
+                        <span>Итого расходов:</span>
+                        <span>{{ "%.2f"|format(ns.total_expenses) }}$</span>
+                    </div>
+                    {% if stock.buy_price is not none %}
+                    {% set total_buy = stock.buy_price * stock.quantity %}
+                    {% set total_expected_sell = stock.expected_sell_price * stock.quantity %}
+                    {% set expected_profit = total_expected_sell - total_buy - ns.total_expenses %}
+                    <div class="expense-item" style="font-weight: 600; color: #28a745;">
+                        <span>Ожидаемая прибыль:</span>
+                        <span>{{ "%.2f"|format(expected_profit) }}$</span>
+                    </div>
+                    {% else %}
+                    <div class="expense-item" style="font-weight: 600; color: #999;">
+                        <span>Ожидаемая прибыль:</span>
+                        <span>— (укажите цену покупки ниже)</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <div class="request-actions">
+                    {% if stock.buy_price is not none and stock.investor_id is not none %}
+                    <form method="POST" action="{{ url_for('approve_stock_request', pending_stock_id=stock.id) }}" style="flex: 1; display: flex;">
+                        <button type="submit" class="action-btn approve-btn" style="min-height: 44px;">✅ Принять</button>
+                    </form>
+                    {% else %}
+                    <form method="POST" action="/complete_stock_request/{{ stock.id }}" class="complete-stock-form" style="flex: 2; display: flex;">
+                        <div class="complete-fields" style="display: flex; gap: 10px; align-items: stretch; width: 100%;">
+                            <input type="number" step="0.01" name="buy_price" placeholder="Цена покупки ($)*" 
+                                   value="{{ stock.buy_price if stock.buy_price is not none else '' }}"
+                                   required style="padding: 10px 12px; border-radius: 8px; border: 1px solid #ddd; min-width: 120px; flex: 1; box-sizing: border-box; height: 44px;">
+                            <select name="investor_id" required style="padding: 10px 12px; border-radius: 8px; border: 1px solid #ddd; min-width: 150px; flex: 1; box-sizing: border-box; height: 44px;">
+                                <option value="">Выберите инвестора *</option>
+                                {% for inv in investors %}
+                                <option value="{{ inv.id }}" {% if stock.investor_id == inv.id %}selected{% endif %}>{{ inv.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="action-btn approve-btn" style="min-height: 44px; flex-shrink: 0; white-space: nowrap;">✏️ Дополнить</button>
+                        </div>
+                    </form>
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('reject_stock_request', pending_stock_id=stock.id) }}" style="flex: 1; display: flex;">
+                        <button type="submit" class="action-btn reject-btn" style="min-height: 44px;">❌ Отклонить</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">Нет заявок на общий сток</div>
+        {% endif %}
+    </div>
+    
+    <!-- Заявки на комиссионный сток -->
+    <div class="request-section">
+        <h2 class="section-title">📦 КОМИССИОННЫЙ СТОК</h2>
+        {% if pending_commission_stocks %}
+            {% for stock in pending_commission_stocks %}
+            <div class="request-card">
+                <div class="request-card-header">
+                    <span class="request-type">КОМИССИОННЫЙ СТОК</span>
+                    <span class="request-id">ID: {{ stock.id }}</span>
+                </div>
+                
+                {% if stock.photo %}
+                <div class="request-image-wrapper">
+                    <img src="{{ url_for('uploaded_file', filename=stock.photo) }}" alt="Фото" class="request-image">
+                </div>
+                {% else %}
+                <div class="request-image-wrapper">
+                    <div class="request-image" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 15px;">
+                        Нет фото
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="request-info">
+                    <div class="info-row">
+                        <span class="info-label">Товар:</span>
+                        <span class="info-value">{{ stock.product_name }}</span>
+                    </div>
+                    {% if stock.reference %}
+                    <div class="info-row">
+                        <span class="info-label">Референс:</span>
+                        <span class="info-value">{{ stock.reference }}</span>
+                    </div>
+                    {% endif %}
+                    {% if stock.item_year %}
+                    <div class="info-row">
+                        <span class="info-label">Год изделия:</span>
+                        <span class="info-value">{{ stock.item_year }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="info-row">
+                        <span class="info-label">Выплата владельцу:</span>
+                        <span class="info-value">{% if stock.buy_price is not none %}{{ "%.2f"|format(stock.buy_price) }}${% else %}<em>— допишет админ</em>{% endif %}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Ожидаемая цена продажи:</span>
+                        <span class="info-value">{{ "%.2f"|format(stock.expected_sell_price) }}$</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Количество:</span>
+                        <span class="info-value">{{ stock.quantity }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Город:</span>
+                        <span class="info-value">{{ stock.city.name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">{% if stock.investor and stock.investor.is_commission_client %}Комиссионный клиент (владелец):{% else %}Инвестор (владелец):{% endif %}</span>
+                        <span class="info-value">{% if stock.investor %}{{ stock.investor.name }}{% if stock.investor.full_name %} — {{ stock.investor.full_name }}{% endif %}{% elif stock.client_full_name or stock.client_phone %}{{ stock.client_full_name or '—' }}{% if stock.client_phone %} · {{ stock.client_phone }}{% endif %}{% else %}<em>— выберите инвестора ниже</em>{% endif %}</span>
+                    </div>
+                    {% if stock.investor and (stock.investor.phone or stock.client_phone) %}
+                    <div class="info-row">
+                        <span class="info-label">Телефон:</span>
+                        <span class="info-value">{{ stock.investor.phone or stock.client_phone }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="info-row">
+                        <span class="info-label">Дата:</span>
+                        <span class="info-value">{{ stock.created_at.strftime('%d.%m.%Y %H:%M') if stock.created_at else 'Не указана' }}</span>
+                    </div>
+                </div>
+                
+                {% set expenses = stock.expenses_data %}
+                {% if expenses %}
+                <div class="expenses-list">
+                    <strong>Расходы:</strong>
+                    {% set ns = namespace(total_expenses=0) %}
+                    {% for exp in expenses %}
+                    <div class="expense-item">
+                        <span>{{ exp.expense_type.name }}: {{ "%.2f"|format(exp.amount) }}$</span>
+                        {% if exp.comment %}
+                        <span style="color: #999; font-size: 12px;">{{ exp.comment }}</span>
+                        {% endif %}
+                    </div>
+                    {% set ns.total_expenses = ns.total_expenses + exp.amount %}
+                    {% endfor %}
+                    <div class="expense-item" style="font-weight: 600; border-top: 1px solid #ddd; padding-top: 5px; margin-top: 5px;">
+                        <span>Итого расходов:</span>
+                        <span>{{ "%.2f"|format(ns.total_expenses) }}$</span>
+                    </div>
+                    {% if stock.buy_price is not none %}
+                    {% set total_buy = stock.buy_price * stock.quantity %}
+                    {% set total_expected_sell = stock.expected_sell_price * stock.quantity %}
+                    {% set expected_profit = total_expected_sell - total_buy - ns.total_expenses %}
+                    <div class="expense-item" style="font-weight: 600; color: #28a745;">
+                        <span>Ожидаемая прибыль:</span>
+                        <span>{{ "%.2f"|format(expected_profit) }}$</span>
+                    </div>
+                    {% else %}
+                    <div class="expense-item" style="font-weight: 600; color: #999;">
+                        <span>Ожидаемая прибыль:</span>
+                        <span>— (укажите выплату ниже)</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <div class="request-actions">
+                    {% if stock.buy_price is not none %}
+                    <form method="POST" action="{{ url_for('approve_stock_request', pending_stock_id=stock.id) }}" style="flex: 1; display: flex;">
+                        <button type="submit" class="action-btn approve-btn" style="min-height: 44px;">✅ Принять</button>
+                    </form>
+                    {% else %}
+                    <form method="POST" action="/complete_stock_request/{{ stock.id }}" class="complete-stock-form" style="flex: 2; display: flex;">
+                        <div class="complete-fields" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; width: 100%;">
+                            <select name="investor_id" style="padding: 10px 12px; border-radius: 8px; border: 1px solid #ddd; min-width: 180px; flex: 1; box-sizing: border-box; height: 44px;">
+                                <option value="">Выберите инвестора (владельца)</option>
+                                {% for inv in investors %}
+                                <option value="{{ inv.id }}" {% if stock.investor_id == inv.id %}selected{% endif %}>{{ inv.name }}{% if inv.full_name %} — {{ inv.full_name }}{% endif %}</option>
+                                {% endfor %}
+                            </select>
+                            <input type="number" step="0.01" name="buy_price" placeholder="Выплата владельцу ($)*" 
+                                   value="{{ stock.buy_price if stock.buy_price is not none else '' }}"
+                                   required style="padding: 10px 12px; border-radius: 8px; border: 1px solid #ddd; min-width: 160px; flex: 1; box-sizing: border-box; height: 44px;">
+                            <button type="submit" class="action-btn approve-btn" style="min-height: 44px; flex-shrink: 0; white-space: nowrap;">✏️ Дополнить</button>
+                        </div>
+                    </form>
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('reject_stock_request', pending_stock_id=stock.id) }}" style="flex: 1; display: flex;">
+                        <button type="submit" class="action-btn reject-btn" style="min-height: 44px;">❌ Отклонить</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">Нет заявок на комиссионный сток</div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.bonus-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.bonus-modal.active {
+    display: flex;
+}
+.bonus-modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    max-width: 450px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.bonus-modal-content h3 {
+    margin: 0 0 25px 0;
+    color: #333;
+    font-size: 22px;
+    font-weight: 600;
+}
+.bonus-modal-content .bonus-amount {
+    font-size: 28px;
+    font-weight: bold;
+    color: #B58358;
+    margin: 15px 0;
+    padding: 10px 0;
+}
+.bonus-modal-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+    width: 100%;
+    justify-content: center;
+}
+.bonus-modal-btn {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s, transform 0.1s;
+}
+.bonus-modal-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+.bonus-modal-btn:active {
+    transform: translateY(0);
+}
+.bonus-modal-btn.confirm {
+    background: #28a745;
+    color: white;
+}
+.bonus-modal-btn.reset {
+    background: #ffc107;
+    color: #333;
+}
+.bonus-modal-btn.cancel {
+    background: #dc3545;
+    color: white;
+}
+</style>
+
+<div id="bonus-modal" class="bonus-modal">
+    <div class="bonus-modal-content">
+        <h3>💰 Добавить бонус</h3>
+        <div style="margin-bottom: 20px; width: 100%;">
+            <label style="display: block; font-weight: 500; color: #333; margin-bottom: 8px; font-size: 14px; text-align: left;">Сумма бонуса:</label>
+            <input type="number" step="0.01" id="bonus-modal-input" value="0" min="0"
+                   placeholder="0"
+                   style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #ddd; font-size: 15px; box-sizing: border-box;"
+                   oninput="updateBonusPreview()">
+        </div>
+        <div id="bonus-modal-details" style="margin-bottom: 15px; color: #666; width: 100%; text-align: left; font-size: 14px; line-height: 1.6;"></div>
+        <div class="bonus-amount" id="bonus-modal-total" style="font-size: 26px; font-weight: bold; color: #B58358; margin: 10px 0 5px 0; width: 100%;"></div>
+        <div class="bonus-modal-buttons">
+            <button class="bonus-modal-btn confirm" id="bonus-confirm-btn">✅ Подтвердить</button>
+            <button class="bonus-modal-btn reset" id="bonus-reset-btn">🔄 Сбросить</button>
+            <button class="bonus-modal-btn cancel" onclick="closeBonusModal()">❌ Отклонить</button>
+        </div>
+    </div>
+</div>
+
+<div id="extra-bonus-modal" class="bonus-modal">
+    <div class="bonus-modal-content">
+        <h3>➕ Доп бонус другому менеджеру</h3>
+        <div style="margin-bottom: 15px; width: 100%; text-align: left;">
+            <label style="display: block; font-weight: 500; color: #333; margin-bottom: 8px; font-size: 14px;">Менеджер:</label>
+            <select id="extra-bonus-employee" style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #ddd; font-size: 15px; box-sizing: border-box;">
+                <option value="">— Выберите —</option>
+                {% for emp in employees %}
+                <option value="{{ emp.id }}">{{ emp.name or 'Без имени' }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="margin-bottom: 20px; width: 100%; text-align: left;">
+            <label style="display: block; font-weight: 500; color: #333; margin-bottom: 8px; font-size: 14px;">Сумма ($):</label>
+            <input type="number" step="0.01" id="extra-bonus-amount" value="" min="0.01" placeholder="0"
+                   style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #ddd; font-size: 15px; box-sizing: border-box;">
+        </div>
+        <div class="bonus-modal-buttons">
+            <button class="bonus-modal-btn confirm" id="extra-bonus-confirm-btn">✅ Добавить</button>
+            <button class="bonus-modal-btn cancel" onclick="closeExtraBonusModal()">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentPendingSaleId = null;
+let currentForm = null;
+
+function updateProfit(input) {
+    const saleId = input.getAttribute('data-sale-id');
+    const saleCard = document.querySelector(`[data-sale-id="${saleId}"]`);
+    const muradBonus = saleCard ? parseFloat(saleCard.getAttribute('data-murad-bonus') || 0) : 0;
+    const extraBonusTotal = saleCard ? parseFloat(saleCard.getAttribute('data-extra-bonus-total') || 0) : 0;
+    const sellPrice = parseFloat(input.getAttribute('data-sell-price'));
+    const buyPrice = parseFloat(input.getAttribute('data-buy-price')) || 0;
+    const totalExpenses = parseFloat(input.getAttribute('data-total-expenses') || 0);
+    const currentBonus = parseFloat(input.getAttribute('data-current-bonus') || 0);
+    const bonusToAdd = parseFloat(input.value) || 0;
+    const totalBonus = currentBonus + bonusToAdd;
+    
+    const profit = sellPrice - buyPrice - totalExpenses - totalBonus - muradBonus - extraBonusTotal;
+    const profitElement = document.getElementById('profit-' + saleId);
+    if (profitElement) {
+        profitElement.textContent = profit.toFixed(2) + '$';
+        // Меняем цвет в зависимости от прибыли
+        if (profit < 0) {
+            profitElement.style.color = '#dc3545';
+        } else {
+            profitElement.style.color = '#28a745';
+        }
+    }
+}
+
+let currentSaleData = null;
+
+function showBonusModal(saleId) {
+    // Получаем данные о заявке из DOM
+    const saleCard = document.querySelector(`[data-sale-id="${saleId}"]`);
+    if (!saleCard) return;
+    
+    const currentBonus = parseFloat(saleCard.getAttribute('data-current-bonus') || 0);
+    const sellPrice = parseFloat(saleCard.getAttribute('data-sell-price') || 0);
+    const buyPrice = parseFloat(saleCard.getAttribute('data-buy-price') || 0);
+    const totalExpenses = parseFloat(saleCard.getAttribute('data-total-expenses') || 0);
+    
+    currentSaleData = {
+        saleId: saleId,
+        currentBonus: currentBonus,
+        sellPrice: sellPrice,
+        buyPrice: buyPrice,
+        totalExpenses: totalExpenses
+    };
+    
+    // Сбрасываем поле ввода
+    document.getElementById('bonus-modal-input').value = '0';
+    updateBonusPreview();
+    
+    document.getElementById('bonus-modal').classList.add('active');
+}
+
+function updateBonusPreview() {
+    if (!currentSaleData) return;
+    
+    const bonusToAdd = parseFloat(document.getElementById('bonus-modal-input').value) || 0;
+    const totalBonus = currentSaleData.currentBonus + bonusToAdd;
+    
+    const details = document.getElementById('bonus-modal-details');
+    const total = document.getElementById('bonus-modal-total');
+    
+    if (currentSaleData.currentBonus > 0) {
+        details.innerHTML = `
+            <div>Текущий бонус: <strong>${currentSaleData.currentBonus.toFixed(2)}$</strong></div>
+            <div>Добавляется: <strong>${bonusToAdd.toFixed(2)}$</strong></div>
+        `;
+    } else {
+        details.innerHTML = `
+            <div>Добавляется: <strong>${bonusToAdd.toFixed(2)}$</strong></div>
+        `;
+    }
+    
+    total.textContent = `Итого: ${totalBonus.toFixed(2)}$`;
+}
+
+function closeBonusModal() {
+    document.getElementById('bonus-modal').classList.remove('active');
+    currentSaleData = null;
+}
+
+let currentExtraBonusSaleId = null;
+
+function showExtraBonusModal(saleId) {
+    currentExtraBonusSaleId = saleId;
+    document.getElementById('extra-bonus-employee').value = '';
+    document.getElementById('extra-bonus-amount').value = '';
+    document.getElementById('extra-bonus-modal').classList.add('active');
+}
+
+function closeExtraBonusModal() {
+    document.getElementById('extra-bonus-modal').classList.remove('active');
+    currentExtraBonusSaleId = null;
+}
+
+async function submitExtraBonus() {
+    if (!currentExtraBonusSaleId) return;
+    const employeeId = document.getElementById('extra-bonus-employee').value;
+    const amount = document.getElementById('extra-bonus-amount').value;
+    if (!employeeId || !amount || parseFloat(amount) <= 0) {
+        alert('Выберите менеджера и укажите сумму больше 0.');
+        return;
+    }
+    const formData = new FormData();
+    formData.append('employee_id', employeeId);
+    formData.append('amount', amount);
+    try {
+        const r = await fetch('/api/pending_sale/' + currentExtraBonusSaleId + '/add_extra_bonus', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await r.json().catch(function() { return {}; });
+        if (data.ok) {
+            closeExtraBonusModal();
+            window.location.reload();
+        } else {
+            alert(data.error || 'Ошибка при добавлении');
+        }
+    } catch (e) {
+        alert('Ошибка сети');
+    }
+}
+
+async function removeExtraBonus(saleId, bonusId) {
+    if (!confirm('Удалить этот доп. бонус?')) return;
+    try {
+        const r = await fetch('/api/pending_sale/' + saleId + '/remove_extra_bonus/' + bonusId, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' }
+        });
+        const data = await r.json().catch(function() { return {}; });
+        if (data.ok) {
+            window.location.reload();
+        } else {
+            alert(data.error || 'Ошибка при удалении');
+        }
+    } catch (e) {
+        alert('Ошибка сети');
+    }
+}
+
+function updateManagerBonusDisplay(saleId, totalBonus) {
+    // Обновляем блок "Бонус менеджера" в секции расходов (если есть расходы)
+    const managerBonusDisplay = document.getElementById('manager-bonus-' + saleId);
+    const managerBonusAmount = document.getElementById('manager-bonus-amount-' + saleId);
+    
+    // Обновляем блок "Бонус менеджера" в секции без расходов
+    const managerBonusDisplayNoExpenses = document.getElementById('manager-bonus-no-expenses-' + saleId);
+    const managerBonusAmountNoExpenses = document.getElementById('manager-bonus-amount-no-expenses-' + saleId);
+    
+    if (totalBonus > 0) {
+        // Показываем и обновляем блок, если бонус > 0
+        if (managerBonusDisplay) {
+            managerBonusDisplay.style.display = '';
+            if (managerBonusAmount) {
+                managerBonusAmount.textContent = totalBonus.toFixed(2) + '$';
+            }
+        }
+        if (managerBonusDisplayNoExpenses) {
+            managerBonusDisplayNoExpenses.style.display = '';
+            if (managerBonusAmountNoExpenses) {
+                managerBonusAmountNoExpenses.textContent = totalBonus.toFixed(2) + '$';
+            }
+        }
+    } else {
+        // Скрываем блок, если бонус = 0
+        if (managerBonusDisplay) {
+            managerBonusDisplay.style.display = 'none';
+        }
+        if (managerBonusDisplayNoExpenses) {
+            managerBonusDisplayNoExpenses.style.display = 'none';
+        }
+    }
+}
+
+function updateProfitForSale(saleId) {
+    const saleCard = document.querySelector(`[data-sale-id="${saleId}"]`);
+    if (!saleCard) return;
+    
+    const sellPrice = parseFloat(saleCard.getAttribute('data-sell-price') || 0);
+    const buyPrice = parseFloat(saleCard.getAttribute('data-buy-price') || 0);
+    const totalExpenses = parseFloat(saleCard.getAttribute('data-total-expenses') || 0);
+    const currentBonus = parseFloat(saleCard.getAttribute('data-current-bonus') || 0);
+    const muradBonus = parseFloat(saleCard.getAttribute('data-murad-bonus') || 0);
+    const extraBonusTotal = parseFloat(saleCard.getAttribute('data-extra-bonus-total') || 0);
+    
+    const profit = sellPrice - buyPrice - totalExpenses - currentBonus - muradBonus - extraBonusTotal;
+    const profitElement = document.getElementById('profit-' + saleId);
+    if (profitElement) {
+        profitElement.textContent = profit.toFixed(2) + '$';
+        if (profit < 0) {
+            profitElement.style.color = '#dc3545';
+        } else {
+            profitElement.style.color = '#28a745';
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmBtn = document.getElementById('bonus-confirm-btn');
+    const resetBtn = document.getElementById('bonus-reset-btn');
+    
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            if (!currentSaleData) return;
+            
+            // Сбрасываем бонус до нуля
+            const totalBonus = 0;
+            
+            // Устанавливаем итоговый бонус в скрытое поле формы
+            const hiddenBonusInput = document.getElementById('bonus-hidden-' + currentSaleData.saleId);
+            if (hiddenBonusInput) {
+                hiddenBonusInput.value = totalBonus;
+            }
+            
+            // Обновляем отображение текущего бонуса на странице
+            const saleCard = document.querySelector(`[data-sale-id="${currentSaleData.saleId}"]`);
+            if (saleCard) {
+                saleCard.setAttribute('data-current-bonus', totalBonus);
+                // Удаляем блок с текущим бонусом
+                const bonusDisplay = saleCard.querySelector('.current-bonus-display');
+                if (bonusDisplay) {
+                    bonusDisplay.remove();
+                }
+                
+                // Обновляем блок "Бонус менеджера" в секции расходов
+                updateManagerBonusDisplay(currentSaleData.saleId, totalBonus);
+            }
+            
+            // Обновляем расчет прибыли
+            updateProfitForSale(currentSaleData.saleId);
+            
+            closeBonusModal();
+        });
+    }
+    
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+            if (!currentSaleData) return;
+            
+            const bonusToAdd = parseFloat(document.getElementById('bonus-modal-input').value) || 0;
+            const totalBonus = currentSaleData.currentBonus + bonusToAdd;
+            
+            // Устанавливаем итоговый бонус в скрытое поле формы
+            const hiddenBonusInput = document.getElementById('bonus-hidden-' + currentSaleData.saleId);
+            if (hiddenBonusInput) {
+                hiddenBonusInput.value = totalBonus;
+            }
+            
+            // Обновляем отображение текущего бонуса на странице
+            const saleCard = document.querySelector(`[data-sale-id="${currentSaleData.saleId}"]`);
+            if (saleCard) {
+                saleCard.setAttribute('data-current-bonus', totalBonus);
+                // Обновляем блок с текущим бонусом, если он есть
+                const bonusRow = saleCard.querySelector('.request-actions-bonus-row');
+                let bonusDisplay = saleCard.querySelector('.current-bonus-display');
+                
+                if (totalBonus > 0) {
+                    if (bonusDisplay) {
+                        bonusDisplay.innerHTML = `<strong>Текущий бонус:</strong> ${totalBonus.toFixed(2)}$`;
+                    } else if (bonusRow) {
+                        // Создаем блок, если его нет
+                        const bonusDiv = document.createElement('div');
+                        bonusDiv.className = 'current-bonus-display';
+                        bonusDiv.style.cssText = 'display: inline-flex; align-items: center; padding: 12px 16px; background: #f5f5f5; border-radius: 10px; font-size: 14px;';
+                        bonusDiv.innerHTML = `<strong>Текущий бонус:</strong> ${totalBonus.toFixed(2)}$`;
+                        bonusRow.insertBefore(bonusDiv, bonusRow.firstChild);
+                    }
+                } else {
+                    // Удаляем блок, если бонус = 0
+                    if (bonusDisplay) {
+                        bonusDisplay.remove();
+                    }
+                }
+                
+                // Обновляем блок "Бонус менеджера" в секции расходов
+                updateManagerBonusDisplay(currentSaleData.saleId, totalBonus);
+            }
+            
+            // Обновляем расчет прибыли
+            updateProfitForSale(currentSaleData.saleId);
+            
+            closeBonusModal();
+        });
+    }
+    
+    // Закрытие модального окна при клике вне его
+    const modal = document.getElementById('bonus-modal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeBonusModal();
+            }
+        });
+    }
+    const extraModal = document.getElementById('extra-bonus-modal');
+    if (extraModal) {
+        extraModal.addEventListener('click', function(e) {
+            if (e.target === this) closeExtraBonusModal();
+        });
+    }
+    document.getElementById('extra-bonus-confirm-btn') && document.getElementById('extra-bonus-confirm-btn').addEventListener('click', submitExtraBonus);
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.remove-extra-bonus-btn');
+        if (btn) {
+            e.preventDefault();
+            removeExtraBonus(btn.getAttribute('data-sale-id'), btn.getAttribute('data-bonus-id'));
+        }
+    });
+});
+
+function toggleInvestorForm() {
+    const form = document.getElementById('investor-form');
+    const btn = document.querySelector('.add-investor-btn');
+    if (!form) return;
+    form.classList.toggle('active');
+    btn.textContent = form.classList.contains('active') ? 'Скрыть форму' : 'Добавить инвестора';
+}
+</script>
+{% endblock %}

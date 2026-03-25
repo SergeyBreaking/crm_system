@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .main-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;  /* Отступ для фиксированного логотипа */
+    }
+    
+    /* Иконка сверху - фиксированная */
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .logo-icon a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+    }
+    
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    /* Заголовок */
+    .main-title {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+    
+    .main-title h1 {
+        font-size: 24px;
+        font-weight: 500;
+        color: #333;
+        line-height: 1.4;
+    }
+    
+    /* Кнопки */
+    .main-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    .main-button {
+        background: #514D4A;
+        color: white;
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 18px;
+        font-weight: 500;
+        transition: background 0.2s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .main-button:hover {
+        background: #3d3a38;
+    }
+    
+    @media (min-width: 768px) {
+        .main-container {
+            max-width: 600px;
+            padding-top: 90px;
+        }
+        
+        .main-title h1 {
+            font-size: 28px;
+        }
+        
+        .main-button {
+            padding: 25px;
+            font-size: 20px;
+        }
+    }
+</style>
+
+<!-- Иконка - фиксированная -->
+<div class="logo-icon">
+    <a href="{{ url_for('main') }}">
+        <img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo">
+    </a>
+</div>
+
+<div class="main-container">
+    <div class="main-title">
+        <h1>{% if session.get('is_admin') %}Панель руководителя<br>компании{% else %}Панель управления<br>менеджера{% endif %}</h1>
+    </div>
+    
+    <div class="main-buttons">
+        {% if session.get('is_admin') %}
+        <a href="{{ url_for('manager_stats') }}" class="main-button">История бонусов</a>
+        <a href="{{ url_for('pending_requests') }}" class="main-button">Заявки</a>
+        {% else %}
+        <a href="{{ url_for('manager_menu') }}" class="main-button">Моя статистика</a>
+        {% endif %}
+        <a href="{{ url_for('dashboard') }}" class="main-button">Продажи</a>
+        <a href="{{ url_for('stock') }}" class="main-button">Сток</a>
+        <a href="{{ url_for('prepayment') }}" class="main-button">Предоплата</a>
+        <a href="{{ url_for('stats') }}" class="main-button">Расходы</a>
+        <a href="{{ url_for('repair_main') }}" class="main-button">Ремонт</a>
+        <a href="{{ url_for('calculator') }}" class="main-button">Калькулятор</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,828 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .index-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;  /* Отступ для фиксированного логотипа */
+    }
+    
+    /* Иконка сверху - фиксированная */
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .logo-icon a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+    }
+    
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    /* Карточка периода */
+    .period-card {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 12px 24px;
+        border-radius: 43px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 30px;
+        display: block;
+        width: 65%;
+        margin-left: auto;
+        margin-right: auto;
+        box-sizing: border-box;
+    }
+    
+    /* Фильтры */
+    .city-filter {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .city-filter form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 15px 20px;
+        border-radius: 15px;
+    }
+    
+    .city-filter .filter-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .city-filter label {
+        font-weight: 500;
+        color: #333;
+        white-space: nowrap;
+        min-width: 70px;
+        text-align: left;
+    }
+    
+    .city-filter select {
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+        background: white;
+        flex: 1;
+        min-width: 0;
+    }
+    
+    /* Две карточки метрик */
+    .metrics-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .metric-card {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        text-decoration: none;
+        display: block;
+        color: inherit;
+    }
+    
+    .metric-card:hover {
+        background: rgba(255, 255, 255, 0.8);
+        transform: translateY(-2px);
+    }
+    
+    .metric-card h2 {
+        font-size: 36px;
+        font-weight: bold;
+        margin: 0;
+        color: #333;
+    }
+    
+    .metric-card p {
+        font-size: 14px;
+        color: #333;
+        margin: 8px 0 0;
+    }
+    
+    /* Карточка расходов */
+    .expenses-card {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 20px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .expenses-card:hover {
+        background: rgba(255, 255, 255, 0.8);
+        transform: translateY(-2px);
+    }
+    
+    .expenses-card .expenses-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .expenses-card .expenses-info p {
+        font-size: 14px;
+        color: #333;
+        margin: 0 0 5px 0;
+    }
+    
+    .expenses-card .expenses-info h2 {
+        font-size: 36px;
+        font-weight: bold;
+        margin: 0;
+        color: #333;
+    }
+    
+    .expenses-card .view-expenses-btn {
+        background: #B58358;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        text-decoration: none;
+        display: inline-block;
+        align-self: center;
+        white-space: nowrap;
+    }
+    
+    /* Карточка прибыли */
+    .profit-card {
+        background: rgba(255, 255, 255, 0.5);
+        color: #333;
+        padding: 15px 25px;
+        border-radius: 20px;
+        text-align: center;
+        margin-bottom: 30px;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        text-decoration: none;
+        display: block;
+    }
+    
+    .profit-card:hover {
+        background: rgba(255, 255, 255, 0.8);
+        transform: translateY(-2px);
+    }
+    
+    .profit-card h2 {
+        font-size: 42px;
+        font-weight: bold;
+        margin: 0;
+        color: #333;
+    }
+    
+    .profit-card p {
+        font-size: 14px;
+        margin: 10px 0 0;
+        opacity: 0.9;
+        color: #333;
+    }
+    
+    /* Заголовок списка */
+    .sales-header {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        margin: 40px 0 20px 0;
+        text-align: center;
+    }
+    
+    /* Карточки продаж */
+    .sales-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .sale-card {
+        background: white;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .sale-card-image-wrapper {
+        padding: 15px;
+        background: white;
+        min-height: 500px;
+    }
+    
+    .sale-card-image {
+        width: 100%;
+        height: 100%;
+        min-height: 470px;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+        background: #f8f8f8;
+        border-radius: 15px;
+    }
+    
+    .sale-card-content {
+        padding: 20px;
+    }
+    
+    .sale-data-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .sale-data-row:last-child {
+        border-bottom: none;
+    }
+    
+    .sale-data-label {
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .sale-data-value {
+        color: #333;
+        font-weight: bold;
+    }
+    
+    /* Расходы внутри карточки */
+    .expenses-in-card {
+        margin-top: 10px;
+    }
+    
+    .expenses-toggle-row {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        user-select: none;
+    }
+    
+    .expenses-toggle-label {
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .expenses-toggle-arrow {
+        font-size: 16px;
+        color: #666;
+        transition: transform 0.2s ease;
+    }
+    
+    .expense-item-in-card {
+        background: rgba(0, 0, 0, 0.15);
+        padding: 10px 15px;
+        border-radius: 10px;
+        margin-top: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .expense-item-in-card strong {
+        color: #333;
+        font-weight: 500;
+    }
+    
+    .expense-item-in-card .amount {
+        color: #333;
+        font-weight: bold;
+    }
+    
+    /* Карточка прибыли внутри продажи */
+    .profit-in-card {
+        background: #514D4A;
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .profit-in-card strong {
+        color: white;
+        font-weight: bold;
+    }
+    
+    .profit-in-card .amount {
+        color: white;
+        font-weight: bold;
+        font-size: 20px;
+    }
+    
+    /* Кнопка изменения */
+    .edit-btn {
+        display: block;
+        width: 100%;
+        background: #B58358;
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 15px;
+        border: none;
+        cursor: pointer;
+    }
+    
+    /* Кнопка удаления */
+    .delete-btn {
+        display: block;
+        width: 100%;
+        background: #dc3545;
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 10px;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .delete-btn:hover {
+        background: #c82333;
+    }
+    
+    .delete-form {
+        margin-top: 10px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+    }
+    
+    @media (min-width: 768px) {
+        .index-container {
+            max-width: 600px;
+            padding-top: 90px;
+        }
+        
+        .city-filter .filter-row {
+            width: 100%;
+        }
+        
+        .metric-card h2 {
+            font-size: 48px;
+        }
+        
+        .expenses-card .expenses-info h2 {
+            font-size: 42px;
+        }
+        
+        .profit-card h2 {
+            font-size: 52px;
+        }
+        
+        .sale-card {
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    }
+
+    .category-filter-bar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+        justify-content: center;
+    }
+
+    .cat-btn {
+        padding: 7px 14px;
+        border-radius: 20px;
+        border: 2px solid #B58358;
+        background: transparent;
+        color: #B58358;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.18s, color 0.18s;
+        outline: none;
+    }
+
+    .cat-btn.active {
+        background: #B58358;
+        color: #fff;
+    }
+
+    .category-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        background: rgba(181, 131, 88, 0.15);
+        color: #B58358;
+    }
+</style>
+
+<div class="index-container">
+    <!-- Иконка - фиксированная -->
+    <div class="logo-icon">
+        <a href="{{ url_for('main') }}">
+            <img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo">
+        </a>
+    </div>
+    
+    <!-- Фильтры -->
+    <div class="city-filter">
+        <form method="GET" id="filters-form">
+            <div class="filter-row">
+                <label><strong>Год:</strong></label>
+                <select name="year" onchange="this.form.submit()">
+                    <option value="all">Все годы</option>
+                    {% for year in all_years %}
+                        <option value="{{ year }}" {% if year_filter == year|string %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-row">
+                <label><strong>Месяц:</strong></label>
+                <select name="month" onchange="this.form.submit()">
+                    <option value="all">Все месяцы</option>
+                    {% for m in range(1,13) %}
+                        <option value="{{ m }}" {% if month_filter == m|string %}selected{% endif %}>{{ months_ru[m-1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-row">
+                <label><strong>Город:</strong></label>
+                <select name="city" onchange="this.form.submit()">
+                    <option value="all" {% if city_filter == 'all' %}selected{% endif %}>Все города</option>
+                    {% for city in all_cities %}
+                        <option value="{{ city }}" {% if city_filter == city %}selected{% endif %}>{{ city }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            {% if is_admin %}
+            <div class="filter-row">
+                <label><strong>Сотрудник:</strong></label>
+                <select name="employee" onchange="this.form.submit()">
+                    <option value="all" {% if employee_filter == 'all' %}selected{% endif %}>Все сотрудники</option>
+                    {% for employee in all_employees %}
+                        <option value="{{ employee.id }}" {% if employee_filter == employee.id|string %}selected{% endif %}>{{ employee.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            <div class="filter-row">
+                <label><strong>Клиент:</strong></label>
+                <select name="client" onchange="this.form.submit()">
+                    <option value="all" {% if client_filter == 'all' %}selected{% endif %}>Все клиенты</option>
+                    {% for client in all_clients %}
+                        <option value="{{ client.id }}" {% if client_filter == client.id|string %}selected{% endif %}>{{ client.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <input type="hidden" name="sort" value="{{ sort }}">
+            {% if not is_admin and employee_filter != 'all' %}
+            <input type="hidden" name="employee" value="{{ employee_filter }}">
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Карточка периода -->
+    <div class="period-card">
+        {{ period_label }}{% if city_filter != 'all' %} ({{ city_filter }}){% endif %}{% if employee_filter != 'all' %}{% for emp in all_employees %}{% if emp.id|string == employee_filter %} - {{ emp.name }}{% endif %}{% endfor %}{% endif %}{% if client_filter != 'all' %}{% for c in all_clients %}{% if c.id|string == client_filter %} — {{ c.full_name }}{% endif %}{% endfor %}{% endif %}
+    </div>
+
+    <!-- Две карточки метрик (у менеджера только «Реализовано») -->
+    <div class="metrics-row">
+        <a href="{{ url_for('sales', year=year_filter if year_filter != 'all' else 'all', month=month_filter if month_filter != 'all' else 'all', city=city_filter if city_filter != 'all' else 'all', employee=employee_filter if employee_filter != 'all' else 'all', client=client_filter if client_filter != 'all' else 'all') }}" class="metric-card">
+            <h2>{{ count_sales }}</h2>
+            <p>Реализовано</p>
+        </a>
+        {% if is_admin %}
+        <a href="{{ url_for('sales', year=year_filter if year_filter != 'all' else 'all', month=month_filter if month_filter != 'all' else 'all', city=city_filter if city_filter != 'all' else 'all', employee=employee_filter if employee_filter != 'all' else 'all', client=client_filter if client_filter != 'all' else 'all') }}" class="metric-card">
+            <h2>{{ "%.0f"|format(gross_income) }}$</h2>
+            <p>Доход</p>
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Карточка расходов (только для админа) -->
+    {% if is_admin %}
+    <a href="{{ url_for('stats') }}" class="expenses-card">
+        <div class="expenses-info">
+            <p>Расходы</p>
+            <h2>{{ "%.0f"|format(total_expenses) }}$</h2>
+        </div>
+        <span class="view-expenses-btn">Просмотреть расходы</span>
+    </a>
+    {% endif %}
+
+    <!-- Карточка прибыли (только для админа) -->
+    {% if is_admin %}
+    <a href="{{ url_for('sales', year=year_filter if year_filter != 'all' else 'all', month=month_filter if month_filter != 'all' else 'all', city=city_filter if city_filter != 'all' else 'all', employee=employee_filter if employee_filter != 'all' else 'all', client=client_filter if client_filter != 'all' else 'all') }}" class="profit-card">
+        <h2>{{ "%.0f"|format(net_profit_month) }}$</h2>
+        <p>Прибыль с вычетом расходов</p>
+    </a>
+    {% endif %}
+
+    <!-- Заголовок списка -->
+    <h2 class="sales-header">Реализованные позиции</h2>
+
+    <!-- Фильтр по категориям -->
+    <div class="category-filter-bar">
+        <button class="cat-btn active" data-cat="watches">Часы</button>
+        <button class="cat-btn active" data-cat="jewelry">Ювелирные</button>
+        <button class="cat-btn active" data-cat="bags">Сумки</button>
+        <button class="cat-btn active" data-cat="accessories">Аксессуары</button>
+        <button class="cat-btn active" data-cat="">Без категории</button>
+    </div>
+
+    <!-- Список продаж -->
+    <ul class="sales-list">
+        {% for s in sales %}
+        <li class="sale-card" data-category="{{ s.category or '' }}">
+            <div class="sale-card-image-wrapper">
+                {% if s.photo %}
+                    <img src="{{ url_for('uploaded_file', filename=s.photo) }}" alt="фото" class="sale-card-image">
+                {% else %}
+                    <div class="sale-card-image" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 15px;">
+                    Нет фото
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="sale-card-content">
+                {% if s.category %}
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Категория</span>
+                    <span class="sale-data-value category-badge cat-{{ s.category }}">
+                        {% if s.category == 'watches' %}Часы
+                        {% elif s.category == 'jewelry' %}Ювелирные изделия
+                        {% elif s.category == 'bags' %}Сумки
+                        {% elif s.category == 'accessories' %}Аксессуары
+                        {% else %}{{ s.category }}{% endif %}
+                    </span>
+                </div>
+                {% endif %}
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Наименование</span>
+                    <span class="sale-data-value">{{ s.product_name }}</span>
+                </div>
+                
+                {% if s.reference %}
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Reference</span>
+                    <span class="sale-data-value">{{ s.reference }}</span>
+                </div>
+                {% endif %}
+                
+                {% if s.item_year %}
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Год изделия</span>
+                    <span class="sale-data-value">{{ s.item_year }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Комиссионный</span>
+                    <span class="sale-data-value">{% if s.komissionnyy %}да{% else %}нет{% endif %}</span>
+                </div>
+                
+                {% if s.investor %}
+                <div class="sale-data-row">
+                    <span class="sale-data-label">{% if s.investor.is_commission_client %}Комиссионный клиент{% else %}Инвестор{% endif %}</span>
+                    <span class="sale-data-value">{{ s.investor.name }}</span>
+                </div>
+                {% endif %}
+                
+                {% if s.client %}
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Клиент</span>
+                    <span class="sale-data-value">{{ s.client.full_name }}</span>
+                </div>
+                {% for label, val in s.client.display_contacts() %}
+                <div class="sale-data-row" style="padding-left: 15px;">
+                    <span class="sale-data-label">{{ label }}</span>
+                    <span class="sale-data-value">{{ val }}</span>
+                </div>
+                {% endfor %}
+                {% endif %}
+                
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Город</span>
+                    <span class="sale-data-value">{{ s.city.name }}</span>
+                </div>
+                
+                {% if is_admin %}
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Покупка</span>
+                    <span class="sale-data-value">{{ "%.0f"|format(s.buy_price) }}$</span>
+                </div>
+                {% endif %}
+                
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Продажа</span>
+                    <span class="sale-data-value">{{ "%.0f"|format(s.sell_price) }}$</span>
+                </div>
+                
+                {% if s.expenses %}
+                <div class="sale-data-row expenses-toggle-row" onclick="toggleSaleExpenses({{ s.id }})">
+                    <span class="sale-data-label">Расход</span>
+                    <span class="sale-data-value">
+                        {{ "%.0f"|format(s.expenses|sum(attribute='amount')) }}$
+                        <span class="expenses-toggle-arrow" id="expenses-arrow-{{ s.id }}">▼</span>
+                    </span>
+                </div>
+                <div class="expenses-in-card" id="expenses-container-{{ s.id }}" style="display: none;">
+                    {% for exp in s.expenses %}
+                    <div class="expense-item-in-card">
+                        <strong>{{ exp.expense_type.name }}</strong>
+                        <span class="amount">{{ "%.0f"|format(exp.amount) }}$</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Расход</span>
+                    <span class="sale-data-value">0$</span>
+                </div>
+                {% endif %}
+                
+                {% if s.bonus and s.bonus > 0 %}
+                <div class="expenses-in-card">
+                    <div class="expense-item-in-card">
+                        <strong>Бонус менеджера</strong>
+                        <span class="amount">{{ "%.0f"|format(s.bonus) }}$</span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if is_admin and (s.murad_bonus | default(0))|float > 0 %}
+                <div class="expenses-in-card">
+                    <div class="expense-item-in-card">
+                        <strong>Бонус Мурада</strong>
+                        <span class="amount">{{ "%.0f"|format(s.murad_bonus) }}$</span>
+                    </div>
+                </div>
+                {% endif %}
+                {% if is_admin and s.additional_bonuses %}
+                {% for ab in s.additional_bonuses %}
+                <div class="expenses-in-card">
+                    <div class="expense-item-in-card">
+                        <strong>Доп бонус ({{ ab.employee.name if ab.employee else '' }})</strong>
+                        <span class="amount">{{ "%.0f"|format(ab.amount) }}$</span>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+                
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Продавец</span>
+                    <span class="sale-data-value">{{ s.employee.name }}</span>
+                </div>
+                
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Дата</span>
+                    <span class="sale-data-value">
+                        {% set months_ru = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'] %}
+                        {{ s.date.day }} {{ months_ru[s.date.month - 1] }} {{ s.date.year }}
+                    </span>
+                </div>
+                
+                {% if s.komplektatsiya %}
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Комплектация</span>
+                    <span class="sale-data-value">{{ s.komplektatsiya }}</span>
+                </div>
+                {% endif %}
+                
+                {% if is_admin %}
+                <div class="profit-in-card">
+                    <strong>Прибыль</strong>
+                    <span class="amount">{{ "%.0f"|format(s.profit) }}$</span>
+                </div>
+                {% endif %}
+                
+                {% if s.comment %}
+                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1);">
+                    <div class="sale-data-label" style="margin-bottom: 5px;">Комментарий</div>
+                    <div style="white-space: pre-wrap; color: #333; font-size: 14px; line-height: 1.5;">{{ s.comment }}</div>
+                </div>
+                {% endif %}
+                
+                <a href="{{ url_for('edit_sale', sale_id=s.id) }}" class="edit-btn">Изменить</a>
+                
+                {% if is_admin %}
+                <form method="POST" action="{{ url_for('delete_sale', sale_id=s.id) }}" class="delete-form" onsubmit="return confirm('Вы уверены, что хотите удалить эту продажу?');">
+                    <button type="submit" class="delete-btn">Удалить</button>
+                </form>
+                {% endif %}
+            </div>
+        </li>
+        {% else %}
+        <li class="empty-state">
+            {% if city_filter != 'all' %}
+                В городе <strong>{{ city_filter }}</strong> пока нет продаж.
+            {% else %}
+                Пока нет продаж вообще.
+            {% endif %}
+            <br><br>
+            <a href="{{ url_for('add_sale') }}" style="color: #B58358; font-weight: bold;">Добавьте первую!</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<script>
+    function toggleSaleExpenses(saleId) {
+        const container = document.getElementById('expenses-container-' + saleId);
+        const arrow = document.getElementById('expenses-arrow-' + saleId);
+        if (!container || !arrow) return;
+        const isHidden = container.style.display === 'none' || container.style.display === '';
+        container.style.display = isHidden ? 'block' : 'none';
+        if (isHidden) {
+            arrow.textContent = '▲';
+        } else {
+            arrow.textContent = '▼';
+        }
+    }
+
+    (function() {
+        const activeCats = new Set(['watches', 'jewelry', 'bags', 'accessories', '']);
+
+        function applyFilter() {
+            document.querySelectorAll('.sales-list .sale-card').forEach(function(card) {
+                const cat = card.dataset.category || '';
+                card.style.display = activeCats.has(cat) ? '' : 'none';
+            });
+        }
+
+        document.querySelectorAll('.cat-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const cat = btn.dataset.cat;
+                if (activeCats.has(cat)) {
+                    activeCats.delete(cat);
+                    btn.classList.remove('active');
+                } else {
+                    activeCats.add(cat);
+                    btn.classList.add('active');
+                }
+                applyFilter();
+            });
+        });
+    })();
+</script>
+{% endblock %}

@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .stock-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;  /* Отступ для фиксированного логотипа */
+    }
+    
+    /* Иконка сверху - фиксированная */
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .logo-icon a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+    }
+    
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    /* Заголовок */
+    .stock-header {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 12px 24px;
+        border-radius: 43px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 30px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Большая карточка с суммой */
+    .stock-main-card {
+        background: #514D4A;
+        color: white;
+        padding: 30px 25px;
+        border-radius: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        text-decoration: none;
+        display: block;
+    }
+    
+    .stock-main-card:hover {
+        background: #3d3a38;
+        transform: translateY(-2px);
+    }
+    
+    .stock-main-card .amount {
+        font-size: 42px;
+        font-weight: bold;
+        margin: 0;
+        color: white;
+    }
+    
+    .stock-main-card .label {
+        font-size: 14px;
+        margin: 10px 0 0;
+        opacity: 0.9;
+        color: white;
+    }
+    
+    /* Две маленькие карточки */
+    .stock-info-cards {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .stock-info-card {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        text-decoration: none;
+        display: block;
+        color: inherit;
+    }
+    
+    .stock-info-card:hover {
+        background: rgba(255, 255, 255, 0.8);
+        transform: translateY(-2px);
+    }
+    
+    .stock-info-card .number {
+        font-size: 32px;
+        font-weight: bold;
+        margin: 0;
+        color: #333;
+    }
+    
+    .stock-info-card .label {
+        font-size: 14px;
+        color: #333;
+        margin: 8px 0 0;
+    }
+    
+    /* Кнопки */
+    .stock-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .stock-button {
+        padding: 15px;
+        border-radius: 20px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .stock-button-primary {
+        background: rgba(255, 255, 255, 0.5);
+        color: #333;
+        border: 1px solid #8b7355;
+    }
+    
+    .stock-button-primary:hover {
+        background: rgba(255, 255, 255, 0.7);
+    }
+    
+    .stock-button-secondary {
+        background: #B58358;
+        color: white;
+    }
+    
+    .stock-button-secondary:hover {
+        background: #9d7149;
+    }
+    
+    .stock-type-buttons {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .stock-type-button {
+        flex: 1;
+        padding: 15px;
+        border-radius: 20px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+    }
+    
+    .stock-type-button.active {
+        background: #B58358;
+        color: white;
+        border-color: #B58358;
+    }
+    
+    .stock-type-button:not(.active) {
+        background: rgba(255, 255, 255, 0.5);
+        color: #333;
+        border-color: #8b7355;
+    }
+    
+    .stock-type-button:not(.active):hover {
+        background: rgba(255, 255, 255, 0.7);
+    }
+    
+    @media (min-width: 768px) {
+        .stock-container {
+            max-width: 600px;
+            padding-top: 90px;
+        }
+        
+        .stock-main-card .amount {
+            font-size: 52px;
+        }
+        
+        .stock-info-card .number {
+            font-size: 40px;
+        }
+    }
+</style>
+
+<!-- Иконка - фиксированная -->
+<div class="logo-icon">
+    <a href="{{ url_for('main') }}">
+        <img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo">
+    </a>
+</div>
+
+<div class="stock-container">
+    <!-- Заголовок -->
+    <div class="stock-header">
+        {% if is_investor %}
+            Мои инвестиции
+        {% elif stock_type == 'commission' %}
+            Комиссионный сток
+        {% else %}
+            Общий сток
+        {% endif %}
+    </div>
+    
+    
+    <!-- Большая карточка с суммой -->
+    {% if is_investor %}
+    <div class="stock-main-card">
+        <div class="amount">{{ "%.0f"|format(total_invested) }}$</div>
+        <div class="label">Всего вложено</div>
+    </div>
+    
+    <!-- Две маленькие карточки -->
+    <div class="stock-info-cards">
+        <div class="stock-info-card">
+            <div class="number">{{ stock_positions }}</div>
+            <div class="label">Позиций в реализации</div>
+        </div>
+        <div class="stock-info-card">
+            <div class="number">{{ "%.0f"|format(expected_profit) }}$</div>
+            <div class="label">Потенциальная прибыль</div>
+        </div>
+    </div>
+    
+    <!-- Кнопка изучить детали -->
+    <div class="stock-buttons">
+        <a href="{{ url_for('investor_stock_detail') }}" class="stock-button stock-button-primary">Изучить детали</a>
+    </div>
+    
+    <!-- Разделитель -->
+    <div style="height: 1px; background: rgba(0,0,0,0.1); margin: 30px 0;"></div>
+    
+    <!-- Общая прибыль в Dauri Club -->
+    <div class="stock-main-card" style="background: rgba(255, 255, 255, 0.5); color: #333;">
+        <div class="amount" style="color: #333;">{{ "%.0f"|format(total_company_profit if total_company_profit is defined else 0) }}$</div>
+        <div class="label" style="color: #666;">Общая прибыль в Dauri Club</div>
+    </div>
+    
+    <!-- Кнопка посмотреть историю -->
+    <div class="stock-buttons" style="margin-top: 20px;">
+        <a href="{{ url_for('my_sales_history') }}" class="stock-button stock-button-primary">Посмотреть историю</a>
+    </div>
+    {% else %}
+    <!-- Большая карточка с суммой (только для админа и только для общего стока) -->
+    {% if is_admin and stock_type != 'commission' %}
+    <a href="{{ url_for('stock_cities') }}" class="stock-main-card">
+        <div class="amount">{{ "%.0f"|format(total_invested) }}$</div>
+        <div class="label">Сумма реализуемых изделий</div>
+    </a>
+    {% endif %}
+    
+    <!-- Две маленькие карточки -->
+    <div class="stock-info-cards">
+        <a href="{{ url_for('stock_cities') }}" class="stock-info-card">
+            <div class="number">{{ stock_positions }}</div>
+            <div class="label">Позиций в стоке</div>
+        </a>
+        <!-- Ожидаемая прибыль (только для админа) -->
+        {% if is_admin %}
+        <a href="{{ url_for('stock_cities') }}" class="stock-info-card">
+            <div class="number">{{ "%.0f"|format(expected_profit) }}$</div>
+            <div class="label">Ожидаемая прибыль</div>
+        </a>
+        {% endif %}
+    </div>
+    
+    <!-- Плашка "Стоки к дозаполнению" (только для админа) -->
+    {% if is_admin %}
+    <div class="stock-info-cards" style="margin-bottom: 20px;">
+        <a href="{{ url_for('stock_incomplete') }}" class="stock-info-card" style="{% if incomplete_stock_count|default(0) > 0 %}border: 2px solid #B58358;{% endif %}">
+            <div class="number">{{ incomplete_stock_count|default(0) }}</div>
+            <div class="label">Стоков к дозаполнению</div>
+        </a>
+    </div>
+    {% endif %}
+    
+    <!-- Кнопки -->
+    <div class="stock-buttons">
+        <a href="{{ url_for('add_stock') }}" class="stock-button stock-button-primary">Добавить сток</a>
+        <div style="display: flex; gap: 15px;">
+            <a href="{{ url_for('stock_investors') }}" class="stock-button stock-button-secondary" style="flex: 1;">Все инвесторы</a>
+            <a href="{{ url_for('stock_cities') }}" class="stock-button stock-button-secondary" style="flex: 1;">Все города</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

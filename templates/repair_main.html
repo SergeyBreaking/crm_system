@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .repair-main-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;
+    }
+    
+    .repair-title {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+    
+    .repair-title h1 {
+        font-size: 24px;
+        font-weight: 500;
+        color: #333;
+        line-height: 1.4;
+    }
+    
+    .repair-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    .repair-button {
+        background: #514D4A;
+        color: white;
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 18px;
+        font-weight: 500;
+        transition: background 0.2s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .repair-button:hover {
+        background: #3d3a38;
+    }
+    
+    /* Плитки статистики */
+    .repair-metrics-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .repair-metric-card {
+        flex: 1;
+        min-width: 0;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        box-sizing: border-box;
+    }
+
+    .repair-metric-card h2 {
+        font-size: 30px;
+        font-weight: bold;
+        margin: 0;
+        color: #333;
+    }
+
+    .repair-metric-card p {
+        font-size: 13px;
+        color: #555;
+        margin: 8px 0 0;
+    }
+
+    .repair-profit-card {
+        background: #514D4A;
+        color: white;
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+        box-sizing: border-box;
+    }
+
+    .repair-profit-card h2 {
+        font-size: 36px;
+        font-weight: bold;
+        margin: 0;
+        color: white;
+    }
+
+    .repair-profit-card p {
+        font-size: 13px;
+        margin: 10px 0 0;
+        opacity: 0.9;
+        color: white;
+    }
+
+    @media (min-width: 768px) {
+        .repair-main-container {
+            max-width: 600px;
+            padding-top: 90px;
+        }
+        
+        .repair-title h1 {
+            font-size: 28px;
+        }
+        
+        .repair-button {
+            padding: 25px;
+            font-size: 20px;
+        }
+
+        .repair-metrics-row,
+        .repair-profit-card {
+            max-width: 500px;
+        }
+
+        .repair-metric-card h2 {
+            font-size: 38px;
+        }
+
+        .repair-profit-card h2 {
+            font-size: 44px;
+        }
+    }
+    
+    /* Иконка сверху - фиксированная */
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .logo-icon a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+    }
+    
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+</style>
+
+<!-- Иконка - фиксированная -->
+<div class="logo-icon">
+    <a href="{{ url_for('main') }}">
+        <img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo">
+    </a>
+</div>
+
+<div class="repair-main-container">
+    <div class="repair-title">
+        <h1>Ремонт</h1>
+    </div>
+
+    <!-- Плитки статистики (все категории) -->
+    <div class="repair-metrics-row">
+        <div class="repair-metric-card">
+            <h2>{{ repair_count }}</h2>
+            <p>Товаров в ремонте</p>
+        </div>
+        {% if is_admin %}
+        <div class="repair-metric-card">
+            <h2>{{ "%.0f"|format(repair_income) }}$</h2>
+            <p>Доход</p>
+        </div>
+        {% endif %}
+    </div>
+    {% if is_admin %}
+    <div class="repair-profit-card">
+        <h2>{{ "%.0f"|format(repair_profit) }}$</h2>
+        <p>Прибыль с вычетом расходов</p>
+    </div>
+    {% endif %}
+
+    <div class="repair-buttons">
+        <a href="{{ url_for('repair_list', category='watches') }}" class="repair-button">Часы</a>
+        <a href="{{ url_for('repair_list', category='jewelry') }}" class="repair-button">Ювелирные изделия</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .calculator-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;
+    }
+    
+    .calculator-card {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .calculator-title {
+        text-align: center;
+        font-size: 28px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 30px;
+    }
+    
+    .form-group {
+        margin-bottom: 25px;
+    }
+    
+    .form-group label {
+        display: block;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 8px;
+        font-size: 16px;
+    }
+    
+    .form-group input[type="number"],
+    .form-group select {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        font-size: 16px;
+        background: white;
+        transition: border-color 0.3s;
+    }
+    
+    .form-group input[type="number"]:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #B58358;
+    }
+    
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 8px;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+    
+    .checkbox-group label {
+        margin: 0;
+        cursor: pointer;
+        font-weight: normal;
+    }
+    
+    .result-group {
+        background: #514D4A;
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        margin-top: 30px;
+    }
+    
+    .result-group label {
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .result-value {
+        font-size: 32px;
+        font-weight: bold;
+        text-align: center;
+        margin-top: 10px;
+    }
+    
+    .info-text {
+        font-size: 14px;
+        color: #666;
+        margin-top: 5px;
+        font-style: italic;
+    }
+    
+    @media (min-width: 768px) {
+        .calculator-container {
+            max-width: 700px;
+            padding-top: 90px;
+        }
+        
+        .calculator-title {
+            font-size: 32px;
+        }
+    }
+</style>
+
+<div class="calculator-container">
+    <div class="calculator-card">
+        <h1 class="calculator-title">Калькулятор стоимости</h1>
+        
+        <form id="calculator-form">
+            <!-- Поле 1: Сумма закупки у поставщика -->
+            <div class="form-group">
+                <label for="purchase_price">Сумма закупки у поставщика ($)</label>
+                <input type="number" id="purchase_price" name="purchase_price" step="0.01" min="0" placeholder="Введите сумму" required>
+            </div>
+            
+            <!-- Поле 2: Процент конвертации USDT -->
+            <div class="form-group">
+                <label>Процент конвертации USDT</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="usdt_conversion" name="usdt_conversion">
+                    <label for="usdt_conversion">Включить конвертацию (1% от суммы закупки)</label>
+                </div>
+                <div class="info-text" id="conversion_info" style="display: none;">
+                    Конвертация: <span id="conversion_amount">0</span>$
+                </div>
+            </div>
+            
+            <!-- Поле 3: Стоимость коробки -->
+            <div class="form-group">
+                <label for="box_price">Стоимость коробки ($)</label>
+                <input type="number" id="box_price" name="box_price" step="0.01" min="0" value="0" placeholder="Введите стоимость коробки">
+            </div>
+            
+            <!-- Поле 4: Логистика -->
+            <div class="form-group">
+                <label for="logistics">Логистика (затраты на доставку) ($)</label>
+                <select id="logistics" name="logistics" required>
+                    <option value="">Выберите стоимость доставки</option>
+                </select>
+                <div class="info-text" id="logistics_info"></div>
+            </div>
+            
+            <!-- Поле 5: Итоговая стоимость -->
+            <div class="form-group result-group">
+                <label>Итоговая стоимость лота в закупке ($)</label>
+                <div class="result-value" id="total_cost">0.00</div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Функция для расчета стоимости логистики на основе суммы закупки
+    function calculateLogistics(purchasePrice) {
+        if (!purchasePrice || purchasePrice <= 0) {
+            return null;
+        }
+        
+        if (purchasePrice >= 5000 && purchasePrice <= 10999) {
+            return { value: 350, label: '350$ (5.000-10.999$)' };
+        } else if (purchasePrice >= 11000 && purchasePrice <= 20999) {
+            return { value: 450, label: '450$ (11.000-20.999$)' };
+        } else if (purchasePrice >= 21000 && purchasePrice <= 39999) {
+            return { value: 500, label: '500$ (21.000-39.999$)' };
+        } else if (purchasePrice >= 40000 && purchasePrice <= 59999) {
+            return { value: 600, label: '600$ (40.000-59.999$)' };
+        } else if (purchasePrice >= 60000 && purchasePrice <= 79999) {
+            return { value: 750, label: '750$ (60.000-79.999$)' };
+        } else if (purchasePrice >= 80000 && purchasePrice <= 100000) {
+            return { value: 950, label: '950$ (80.000-100.000$)' };
+        } else if (purchasePrice > 100000) {
+            return { value: 2500, label: '2.500$ (свыше 100.000$)' };
+        } else {
+            return null;
+        }
+    }
+    
+    // Функция для обновления выпадающего списка логистики
+    function updateLogisticsOptions(purchasePrice) {
+        const logisticsSelect = document.getElementById('logistics');
+        const logisticsInfo = document.getElementById('logistics_info');
+        const currentValue = logisticsSelect.value;
+        
+        const logistics = calculateLogistics(purchasePrice);
+        
+        // Очищаем список
+        logisticsSelect.innerHTML = '<option value="">Выберите стоимость доставки</option>';
+        
+        if (logistics) {
+            // Добавляем опцию с рассчитанной стоимостью
+            const option = document.createElement('option');
+            option.value = logistics.value;
+            option.textContent = logistics.label;
+            option.selected = true;
+            logisticsSelect.appendChild(option);
+            
+            logisticsInfo.textContent = 'Стоимость доставки рассчитана автоматически на основе суммы закупки';
+            logisticsInfo.style.display = 'block';
+        } else {
+            logisticsInfo.textContent = 'Введите сумму закупки для расчета стоимости доставки';
+            logisticsInfo.style.display = 'block';
+        }
+    }
+    
+    // Функция для расчета итоговой стоимости
+    function calculateTotal() {
+        const purchasePrice = parseFloat(document.getElementById('purchase_price').value) || 0;
+        const usdtConversion = document.getElementById('usdt_conversion').checked;
+        const boxPrice = parseFloat(document.getElementById('box_price').value) || 0;
+        const logistics = parseFloat(document.getElementById('logistics').value) || 0;
+        
+        // Расчет конвертации USDT (1% от суммы закупки)
+        const conversionAmount = usdtConversion ? purchasePrice * 0.01 : 0;
+        
+        // Итоговая стоимость
+        const total = purchasePrice + conversionAmount + boxPrice + logistics;
+        
+        // Обновляем отображение конвертации
+        const conversionInfo = document.getElementById('conversion_info');
+        const conversionAmountSpan = document.getElementById('conversion_amount');
+        if (usdtConversion) {
+            conversionAmountSpan.textContent = conversionAmount.toFixed(2);
+            conversionInfo.style.display = 'block';
+        } else {
+            conversionInfo.style.display = 'none';
+        }
+        
+        // Обновляем итоговую стоимость
+        document.getElementById('total_cost').textContent = total.toFixed(2);
+    }
+    
+    // Обработчики событий
+    document.getElementById('purchase_price').addEventListener('input', function() {
+        const purchasePrice = parseFloat(this.value) || 0;
+        updateLogisticsOptions(purchasePrice);
+        calculateTotal();
+    });
+    
+    document.getElementById('usdt_conversion').addEventListener('change', function() {
+        calculateTotal();
+    });
+    
+    document.getElementById('box_price').addEventListener('input', function() {
+        calculateTotal();
+    });
+    
+    document.getElementById('logistics').addEventListener('change', function() {
+        calculateTotal();
+    });
+    
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        updateLogisticsOptions(0);
+        calculateTotal();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,611 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .edit-repair-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;
+    }
+    
+    /* Логотип - фиксированный */
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .logo-icon a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+    }
+    
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    .page-title {
+        text-align: center;
+        font-size: 18px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 30px;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 12px 24px;
+        border-radius: 43px;
+        display: inline-block;
+        width: auto;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    /* Секция фотографии */
+    .photo-section {
+        margin-bottom: 25px;
+    }
+    
+    .photo-label {
+        font-size: 26px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+        display: block;
+        text-align: center;
+    }
+    
+    .photo-upload-card {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 0;
+        text-align: center;
+        cursor: pointer;
+        border: 2px dashed transparent;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .photo-upload-card:hover {
+        border-color: #B58358;
+    }
+    
+    .photo-upload-icon {
+        font-size: 48px;
+        margin-bottom: 10px;
+    }
+    
+    .photo-upload-text {
+        font-size: 16px;
+        color: #333;
+    }
+    
+    .photo-upload-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        flex: 1;
+    }
+    
+    .photo-preview {
+        max-width: 100%;
+        width: 100%;
+        object-fit: contain;
+        display: none;
+        flex: 1;
+    }
+    
+    .photo-preview.active {
+        display: block;
+        border-radius: 20px 20px 0 0;
+        min-height: 300px;
+    }
+    
+    .current-photo {
+        max-width: 100%;
+        width: 100%;
+        object-fit: contain;
+        border-radius: 20px 20px 0 0;
+        display: block;
+        min-height: 300px;
+    }
+    
+    .replace-photo-btn {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #B58358;
+        color: white;
+        padding: 12px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        border-radius: 0 0 20px 20px;
+    }
+    
+    /* Поля ввода */
+    .form-field {
+        margin-bottom: 20px;
+    }
+    
+    .field-label {
+        font-size: 16px;
+        color: #333;
+        display: block;
+        font-weight: 500;
+        padding: 15px 20px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    
+    .field-input-card {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .field-input-wrapper {
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+    
+    .field-input-card input,
+    .field-input-card select,
+    .field-input-card textarea {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-size: 16px;
+        color: #333;
+        outline: none;
+        width: 100%;
+        padding: 0;
+        font-family: inherit;
+        resize: vertical;
+    }
+    
+    .field-input-card textarea {
+        min-height: 60px;
+        padding: 5px 0;
+    }
+    
+    .field-input-card input::placeholder,
+    .field-input-card textarea::placeholder {
+        color: #999;
+        opacity: 0.7;
+    }
+    
+    .field-input-card select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right center;
+        padding-right: 25px;
+    }
+    
+    /* Поле даты */
+    .date-field-wrapper {
+        position: relative;
+    }
+    .date-field-wrapper .field-input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .date-field-wrapper input[type="date"] {
+        flex: 1;
+        min-height: 44px;
+    }
+    .date-field-hint {
+        font-size: 13px;
+        color: #888;
+        margin-top: 8px;
+        padding: 0 20px 10px;
+        display: block;
+    }
+    .date-icon {
+        font-size: 22px;
+        flex-shrink: 0;
+        opacity: 0.7;
+    }
+    
+    .other-field {
+        display: none;
+        margin-top: 10px;
+    }
+    
+    .other-field.active {
+        display: block;
+    }
+    
+    /* Плашка "Добавить нового ..." */
+    .inline-add-btn { display:flex; align-items:center; justify-content:space-between; background:#B58358; color:white; padding:14px 20px; border-radius:0 0 18px 18px; cursor:pointer; font-size:15px; font-weight:500; margin-top:-4px; user-select:none; transition:background 0.2s; }
+    .inline-add-btn:hover { background:#a07248; }
+    .inline-add-btn .plus-icon { font-size:20px; font-weight:300; line-height:1; }
+    .inline-add-form { background:white; border-radius:18px; padding:18px 20px 14px; margin-top:10px; box-shadow:0 2px 10px rgba(0,0,0,0.08); display:none; }
+    .inline-add-form.open { display:block; }
+    .inline-add-form .iaf-field { margin-bottom:12px; }
+    .inline-add-form .iaf-label { font-size:13px; color:#888; margin-bottom:4px; display:block; }
+    .inline-add-form .iaf-input { width:100%; padding:10px 14px; border:1px solid #e0d5c8; border-radius:10px; font-size:15px; background:#faf9f7; box-sizing:border-box; }
+    .inline-add-form .iaf-input:focus { outline:none; border-color:#B58358; }
+    .inline-add-form .iaf-hint { font-size:12px; color:#aaa; margin:-6px 0 10px; }
+    .inline-add-form .iaf-error { color:#c00; font-size:13px; margin-bottom:8px; display:none; }
+    .inline-add-form .iaf-submit { width:100%; padding:12px; background:#B58358; color:white; border:none; border-radius:12px; font-size:15px; font-weight:500; cursor:pointer; transition:background 0.2s; }
+    .inline-add-form .iaf-submit:hover { background:#a07248; }
+    .inline-add-form .iaf-submit:disabled { background:#ccc; cursor:default; }
+
+    /* Поиск клиента */
+    .client-search-wrapper {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .client-search-wrapper input[type="text"] {
+        flex: 1;
+        min-width: 0;
+    }
+    .client-search-results {
+        max-height: 200px;
+        overflow-y: auto;
+        border-top: 1px solid rgba(0,0,0,0.08);
+        display: none;
+    }
+    .client-search-results.active {
+        display: block;
+    }
+    .client-search-item {
+        padding: 12px 20px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        font-size: 14px;
+    }
+    .client-search-item:hover {
+        background: rgba(181, 131, 88, 0.1);
+    }
+    .client-search-item .client-name {
+        font-weight: 500;
+        color: #333;
+    }
+    .client-search-item .client-contacts {
+        font-size: 12px;
+        color: #666;
+        margin-top: 2px;
+    }
+    
+    /* Кнопка отправки */
+    .submit-btn {
+        width: 100%;
+        padding: 18px;
+        background: #514D4A;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        font-size: 18px;
+        font-weight: 500;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: background 0.2s ease;
+    }
+    
+    .submit-btn:hover {
+        background: #3d3a38;
+    }
+    
+    @media (min-width: 768px) {
+        .edit-repair-container {
+            max-width: 600px;
+            padding-top: 90px;
+        }
+    }
+</style>
+
+<!-- Иконка - фиксированная -->
+<div class="logo-icon">
+    <a href="{{ url_for('main') }}">
+        <img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo">
+    </a>
+</div>
+
+<div class="edit-repair-container">
+    <h1 class="page-title">Изменить ремонт: {{ category_name }}</h1>
+    
+    <form method="POST" enctype="multipart/form-data" id="repair-form">
+        <!-- Фото -->
+        <div class="form-field photo-section">
+            <label class="photo-label">Фото</label>
+            <div class="photo-upload-card" onclick="document.getElementById('photo').click()">
+                {% if repair.photo %}
+                    <img src="{{ url_for('uploaded_file', filename=repair.photo) }}" alt="Текущее фото" class="current-photo" id="current-photo">
+                    <img id="photo-preview" class="photo-preview" alt="Preview">
+                    <button type="button" class="replace-photo-btn" onclick="event.stopPropagation(); document.getElementById('photo').click()">Изменить фото</button>
+                {% else %}
+                    <div class="photo-upload-placeholder">
+                        <div class="photo-upload-icon">📷</div>
+                        <div class="photo-upload-text">Нажмите для загрузки фото</div>
+                    </div>
+                    <img id="photo-preview" class="photo-preview" alt="Preview">
+                {% endif %}
+                <input type="file" id="photo" name="photo" accept="image/*" style="display: none;" onchange="previewPhoto(this)">
+            </div>
+        </div>
+        
+        <!-- Товар (наименование) -->
+        <div class="form-field">
+            <label class="field-label" for="product_name">Товар</label>
+            <div class="field-input-card">
+                <div class="field-input-wrapper">
+                    <input type="text" id="product_name" name="product_name" value="{{ repair.product_name }}" placeholder="Введите наименование" required>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Заход -->
+        <div class="form-field">
+            <label class="field-label" for="buy_price">Заход</label>
+            <div class="field-input-card">
+                <div class="field-input-wrapper">
+                    <input type="number" id="buy_price" name="buy_price" step="0.01" value="{{ repair.buy_price }}" placeholder="0" required>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Продажа -->
+        <div class="form-field">
+            <label class="field-label" for="sell_price">Продажа</label>
+            <div class="field-input-card">
+                <div class="field-input-wrapper">
+                    <input type="number" id="sell_price" name="sell_price" step="0.01" value="{{ repair.sell_price }}" placeholder="0" required>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Город -->
+        <div class="form-field">
+            <label class="field-label" for="city_id">Город</label>
+            <div class="field-input-card">
+                <div class="field-input-wrapper">
+                    <select id="city_id" name="city_id" required>
+                        <option value="">Выберите город</option>
+                        {% for city in cities %}
+                            <option value="{{ city.id }}" {% if repair.city_id == city.id %}selected{% endif %}>{{ city.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Клиент -->
+        <div class="form-field">
+            <div class="field-input-card" style="border-radius: 20px 20px 0 0;">
+                <label class="field-label" for="client_search">Клиент</label>
+                <div class="field-input-wrapper client-search-wrapper">
+                    <input type="text" id="client_search" name="client_search" value="{% if repair.client %}{{ repair.client.full_name }}{% endif %}" placeholder="Начните вводить имя клиента..." autocomplete="off" oninput="searchClients(this.value)">
+                    <input type="hidden" id="client_id" name="client_id" value="{% if repair.client_id %}{{ repair.client_id }}{% endif %}">
+                </div>
+                <div id="client-results" class="client-search-results"></div>
+            </div>
+            <div class="inline-add-btn" onclick="toggleInlineForm('client-inline-form', this)">
+                <span>Добавить нового клиента</span>
+                <span class="plus-icon" id="client-inline-icon">+</span>
+            </div>
+            <div id="client-inline-form" class="inline-add-form">
+                <div class="iaf-error" id="client-iaf-error"></div>
+                <div class="iaf-field"><label class="iaf-label">ФИО <span style="color:#c00">*</span></label><input type="text" class="iaf-input" id="iaf-client-full-name" placeholder="Иванов Иван Иванович"></div>
+                <div class="iaf-field"><label class="iaf-label">Телефон</label><input type="text" class="iaf-input" id="iaf-client-phone" placeholder="+7 999 123-45-67"></div>
+                <div class="iaf-field"><label class="iaf-label">Instagram</label><input type="text" class="iaf-input" id="iaf-client-instagram" placeholder="@username"></div>
+                <div class="iaf-field"><label class="iaf-label">Telegram</label><input type="text" class="iaf-input" id="iaf-client-telegram" placeholder="@username или +7..."></div>
+                <div class="iaf-field"><label class="iaf-label">Почта</label><input type="email" class="iaf-input" id="iaf-client-email" placeholder="email@example.com"></div>
+                <p class="iaf-hint">ФИО и хотя бы один контакт обязательны</p>
+                <button type="button" class="iaf-submit" id="iaf-client-submit" onclick="submitInlineClient()">Добавить клиента</button>
+            </div>
+        </div>
+        
+        <!-- Дата -->
+        <div class="form-field date-field-wrapper">
+            <div class="field-input-card">
+                <label class="field-label">Дата</label>
+                <div class="field-input-wrapper">
+                    <span class="date-icon" aria-hidden="true">📅</span>
+                    <input type="date" name="date" id="repair-date-input" value="{% if repair.date %}{{ repair.date.strftime('%Y-%m-%d') }}{% endif %}" required>
+                </div>
+                <span class="date-field-hint">Нажмите для выбора даты</span>
+            </div>
+        </div>
+        
+        <!-- Вид ремонта -->
+        <div class="form-field">
+            <label class="field-label" for="repair_type">Вид ремонта</label>
+            <div class="field-input-card">
+                <div class="field-input-wrapper">
+                    <select id="repair_type" name="repair_type" required>
+                        <option value="">Выберите вид ремонта</option>
+                        <option value="Ремонт" {% if repair.repair_type == 'Ремонт' %}selected{% endif %}>Ремонт</option>
+                        <option value="ТО" {% if repair.repair_type == 'ТО' %}selected{% endif %}>ТО</option>
+                        <option value="Полировка" {% if repair.repair_type == 'Полировка' %}selected{% endif %}>Полировка</option>
+                        <option value="Замена стекла" {% if repair.repair_type == 'Замена стекла' %}selected{% endif %}>Замена стекла</option>
+                        <option value="Запчасти" {% if repair.repair_type == 'Запчасти' %}selected{% endif %}>Запчасти</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Другое (комментарий) -->
+        <div class="form-field">
+            <label class="field-label" for="repair_type_other">Другое</label>
+            <div class="field-input-card">
+                <div class="field-input-wrapper">
+                    <input type="text" id="repair_type_other" name="repair_type_other" value="{% if repair.repair_type_other %}{{ repair.repair_type_other }}{% endif %}" placeholder="Дополнительная информация или комментарий">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Комментарий -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="comment">Комментарий</label>
+                <div class="field-input-wrapper">
+                    <textarea id="comment" name="comment" rows="3" placeholder="Введите комментарий (необязательно)">{% if repair.comment %}{{ repair.comment }}{% endif %}</textarea>
+                </div>
+            </div>
+        </div>
+        
+        <button type="submit" class="submit-btn">Сохранить изменения</button>
+    </form>
+</div>
+
+<script>
+    const clients = [
+        {% for client in clients_list %}
+        {
+            id: {{ client.id }},
+            name: "{{ client.full_name|e }}",
+            phone: "{{ client.phone|e if client.phone else '' }}",
+            telegram: "{{ client.telegram|e if client.telegram else '' }}"
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    function searchClients(query) {
+        const resultsDiv = document.getElementById('client-results');
+        const clientIdInput = document.getElementById('client_id');
+        const clientSearchInput = document.getElementById('client_search');
+        
+        if (query.length < 2) {
+            resultsDiv.classList.remove('active');
+            return;
+        }
+        
+        const filtered = clients.filter(c => 
+            c.name.toLowerCase().includes(query.toLowerCase())
+        );
+        
+        if (filtered.length === 0) {
+            resultsDiv.innerHTML = '<div class="client-search-item">Клиент не найден</div>';
+            resultsDiv.classList.add('active');
+            return;
+        }
+        
+        resultsDiv.innerHTML = filtered.map(c => {
+            let contacts = [];
+            if (c.phone) contacts.push(`Тел: ${c.phone}`);
+            if (c.telegram) contacts.push(`Тг: ${c.telegram}`);
+            return `
+                <div class="client-search-item" onclick="selectClient(${c.id}, '${c.name.replace(/'/g, "\\'")}')">
+                    <div class="client-name">${c.name}</div>
+                    ${contacts.length ? `<div class="client-contacts">${contacts.join(', ')}</div>` : ''}
+                </div>
+            `;
+        }).join('');
+        
+        resultsDiv.classList.add('active');
+    }
+    
+    function selectClient(id, name) {
+        document.getElementById('client_id').value = id;
+        document.getElementById('client_search').value = name;
+        document.getElementById('client-results').classList.remove('active');
+    }
+    
+    function previewPhoto(input) {
+        const preview = document.getElementById('photo-preview');
+        const currentPhoto = document.getElementById('current-photo');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.classList.add('active');
+                if (currentPhoto) currentPhoto.style.display = 'none';
+                // Ensure replace button exists
+                let replaceBtn = document.querySelector('.replace-photo-btn');
+                if (!replaceBtn) {
+                    replaceBtn = document.createElement('button');
+                    replaceBtn.type = 'button';
+                    replaceBtn.className = 'replace-photo-btn';
+                    replaceBtn.textContent = 'Изменить фото';
+                    replaceBtn.onclick = function(ev) { ev.stopPropagation(); document.getElementById('photo').click(); };
+                    document.querySelector('.photo-upload-card').appendChild(replaceBtn);
+                }
+            };
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.classList.remove('active');
+        }
+    }
+    
+    // Закрытие результатов поиска при клике вне
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.client-search-wrapper') && !e.target.closest('#client-results')) {
+            document.getElementById('client-results').classList.remove('active');
+        }
+    });
+
+    function toggleInlineForm(formId, btn) {
+        const form = document.getElementById(formId);
+        const isOpen = form.classList.contains('open');
+        form.classList.toggle('open', !isOpen);
+        const icon = btn ? btn.querySelector('.plus-icon') : null;
+        if (icon) icon.textContent = isOpen ? '+' : '×';
+    }
+
+    function submitInlineClient() {
+        const btn = document.getElementById('iaf-client-submit');
+        const errEl = document.getElementById('client-iaf-error');
+        errEl.style.display = 'none';
+        const full_name = document.getElementById('iaf-client-full-name').value.trim();
+        const phone = document.getElementById('iaf-client-phone').value.trim();
+        const instagram = document.getElementById('iaf-client-instagram').value.trim();
+        const telegram = document.getElementById('iaf-client-telegram').value.trim();
+        const email = document.getElementById('iaf-client-email').value.trim();
+        if (!full_name) { errEl.textContent = 'Введите ФИО'; errEl.style.display = 'block'; return; }
+        if (!phone && !instagram && !telegram && !email) {
+            errEl.textContent = 'Укажите хотя бы один контакт'; errEl.style.display = 'block'; return;
+        }
+        btn.disabled = true; btn.textContent = 'Сохранение...';
+        fetch('/api/add_client', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({full_name, phone, instagram, telegram, email, birth_date: ''})
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                document.getElementById('client_id').value = data.id;
+                document.getElementById('client_search').value = data.full_name;
+                document.getElementById('client-results').classList.remove('active');
+                document.getElementById('client-inline-form').classList.remove('open');
+                document.getElementById('client-inline-icon').textContent = '+';
+                ['iaf-client-full-name','iaf-client-phone','iaf-client-instagram','iaf-client-telegram','iaf-client-email'].forEach(id => { document.getElementById(id).value = ''; });
+            } else { errEl.textContent = data.error || 'Ошибка'; errEl.style.display = 'block'; }
+        }).catch(() => { errEl.textContent = 'Ошибка сети'; errEl.style.display = 'block'; })
+        .finally(() => { btn.disabled = false; btn.textContent = 'Добавить клиента'; });
+    }
+</script>
+{% endblock %}

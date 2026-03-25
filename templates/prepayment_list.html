@@ -1,0 +1,642 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .prepayment-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;  /* Отступ для фиксированного логотипа */
+    }
+    
+    /* Иконка сверху - фиксированная */
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .logo-icon a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+    }
+    
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    /* Карточка периода */
+    .period-card {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 12px 24px;
+        border-radius: 43px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 30px;
+        display: block;
+        width: 65%;
+        margin-left: auto;
+        margin-right: auto;
+        box-sizing: border-box;
+    }
+    
+    /* Фильтры */
+    .city-filter {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .city-filter form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 15px 20px;
+        border-radius: 15px;
+    }
+    
+    .city-filter .filter-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .city-filter label {
+        font-weight: 500;
+        color: #333;
+        white-space: nowrap;
+        min-width: 70px;
+        text-align: left;
+    }
+    
+    .city-filter select {
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+        background: white;
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .add-button {
+        display: block;
+        width: 100%;
+        background: #514D4A;
+        color: white;
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 18px;
+        font-weight: 500;
+        margin-bottom: 30px;
+        transition: background 0.2s ease;
+    }
+    
+    .add-button:hover {
+        background: #3d3a38;
+    }
+    
+    /* Заголовок списка */
+    .prepayment-header {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        margin: 40px 0 20px 0;
+        text-align: center;
+    }
+    
+    /* Карточки предоплаты */
+    .prepayment-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .prepayment-card {
+        background: white;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .prepayment-card-image-wrapper {
+        padding: 15px;
+        background: white;
+        min-height: 500px;
+    }
+    
+    .prepayment-card-image {
+        width: 100%;
+        height: 100%;
+        min-height: 470px;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+        background: #f8f8f8;
+        border-radius: 15px;
+    }
+    
+    .prepayment-card-content {
+        padding: 20px;
+    }
+    
+    .prepayment-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .prepayment-status {
+        padding: 5px 15px;
+        border-radius: 15px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-approved {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-rejected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-converted {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .prepayment-data-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .prepayment-data-row:last-child {
+        border-bottom: none;
+    }
+    
+    .prepayment-data-label {
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .prepayment-data-value {
+        color: #333;
+        font-weight: bold;
+    }
+    
+    /* Расходы внутри карточки */
+    .expenses-in-card {
+        margin-top: 10px;
+    }
+    
+    .expense-item-in-card {
+        background: rgba(0, 0, 0, 0.15);
+        padding: 10px 15px;
+        border-radius: 10px;
+        margin-top: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .expense-item-in-card strong {
+        color: #333;
+        font-weight: 500;
+    }
+    
+    .expense-item-in-card .amount {
+        color: #333;
+        font-weight: bold;
+    }
+    
+    /* Кнопка изменения */
+    .edit-btn {
+        display: block;
+        width: 100%;
+        background: #A67C52;
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 15px;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .edit-btn:hover {
+        background: #8d6a45;
+    }
+    
+    /* Кнопка удаления */
+    .delete-btn {
+        display: block;
+        width: 100%;
+        background: #E43F40;
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 10px;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .delete-btn:hover {
+        background: #d32e2f;
+    }
+    
+    .delete-form {
+        margin-top: 10px;
+    }
+    
+    /* Кнопка завершить сделку */
+    .complete-btn {
+        display: block;
+        width: 100%;
+        background: white;
+        color: #333;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 10px;
+        border: 2px solid #A67C52;
+        cursor: pointer;
+    }
+    
+    .complete-btn:hover {
+        background: #f5f5f5;
+    }
+    
+    .complete-form {
+        margin-top: 10px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+    }
+    
+    @media (min-width: 768px) {
+        .prepayment-container {
+            max-width: 600px;
+            padding-top: 90px;
+        }
+        
+        .city-filter .filter-row {
+            width: 100%;
+        }
+        
+        .prepayment-card {
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    }
+</style>
+
+<div class="prepayment-container">
+    <!-- Иконка - фиксированная -->
+    <div class="logo-icon">
+        <a href="{{ url_for('main') }}">
+            <img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo">
+        </a>
+    </div>
+    
+    <!-- Фильтры -->
+    <div class="city-filter">
+        <form method="GET" id="filters-form" action="{{ url_for('prepayment') }}" onsubmit="return updateFilters(event)">
+            <div class="filter-row">
+                <label><strong>Год:</strong></label>
+                <select name="year" id="year-select" onchange="updateFilters(event)">
+                    <option value="all">Все годы</option>
+                    {% for year in all_years %}
+                        <option value="{{ year }}" {% if year_filter == year|string %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-row">
+                <label><strong>Месяц:</strong></label>
+                <select name="month" id="month-select" onchange="updateFilters(event)">
+                    <option value="all">Все месяцы</option>
+                    {% for m in range(1,13) %}
+                        <option value="{{ m }}" {% if month_filter == m|string %}selected{% endif %}>{{ months_ru[m-1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-row">
+                <label><strong>Город:</strong></label>
+                <select name="city" id="city-select" onchange="updateFilters(event)">
+                    <option value="all" {% if city_filter == 'all' %}selected{% endif %}>Все города</option>
+                    {% for city in all_cities %}
+                        <option value="{{ city }}" {% if city_filter == city %}selected{% endif %}>{{ city }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            {% if is_admin %}
+            <div class="filter-row">
+                <label><strong>Сотрудник:</strong></label>
+                <select name="employee" id="employee-select" onchange="updateFilters(event)">
+                    <option value="all" {% if employee_filter == 'all' %}selected{% endif %}>Все сотрудники</option>
+                    {% for employee in all_employees %}
+                        <option value="{{ employee.id }}" {% if employee_filter == employee.id|string %}selected{% endif %}>{{ employee.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% else %}
+            {% if employee_filter != 'all' %}
+            <input type="hidden" name="employee" id="employee-select" value="{{ employee_filter }}">
+            {% endif %}
+            {% endif %}
+            
+            <div class="filter-row">
+                <label><strong>Клиент:</strong></label>
+                <select name="client" id="client-select" onchange="updateFilters(event)">
+                    <option value="all" {% if client_filter == 'all' %}selected{% endif %}>Все клиенты</option>
+                    {% for client in all_clients %}
+                        <option value="{{ client.id }}" {% if client_filter == client.id|string %}selected{% endif %}>{{ client.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-row">
+                <label><strong>Статус:</strong></label>
+                <select name="status" id="status-select" onchange="updateFilters(event)">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Все статусы</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Ожидает</option>
+                    <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Одобрена</option>
+                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Отклонена</option>
+                    <option value="converted_to_sale" {% if status_filter == 'converted_to_sale' %}selected{% endif %}>Переведена в продажу</option>
+                </select>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        function updateFilters(event) {
+            if (event) {
+                event.preventDefault();
+            }
+            
+            const form = document.getElementById('filters-form');
+            const params = new URLSearchParams();
+            
+            // Получаем все значения из формы
+            const year = document.getElementById('year-select')?.value || 'all';
+            const month = document.getElementById('month-select')?.value || 'all';
+            const city = document.getElementById('city-select')?.value || 'all';
+            const employeeEl = document.getElementById('employee-select');
+            const employee = employeeEl ? employeeEl.value : 'all';
+            const client = document.getElementById('client-select')?.value || 'all';
+            const status = document.getElementById('status-select')?.value || 'all';
+            
+            // Добавляем только значения, которые не равны "all"
+            if (year && year !== 'all') params.append('year', year);
+            if (month && month !== 'all') params.append('month', month);
+            if (city && city !== 'all') params.append('city', city);
+            if (employee && employee !== 'all') params.append('employee', employee);
+            if (client && client !== 'all') params.append('client', client);
+            if (status && status !== 'all') params.append('status', status);
+            
+            // Перенаправляем с сохранением всех фильтров
+            const url = '{{ url_for("prepayment") }}' + (params.toString() ? '?' + params.toString() : '');
+            window.location.href = url;
+            
+            return false;
+        }
+    </script>
+
+    <!-- Карточка периода -->
+    <div class="period-card">
+        Предоплата{% if city_filter != 'all' %} ({{ city_filter }}){% endif %}{% if employee_filter != 'all' %}{% for emp in all_employees %}{% if emp.id|string == employee_filter %} - {{ emp.name }}{% endif %}{% endfor %}{% endif %}{% if client_filter != 'all' %}{% for c in all_clients %}{% if c.id|string == client_filter %} — {{ c.full_name }}{% endif %}{% endfor %}{% endif %}
+    </div>
+    
+    <a href="{{ url_for('add_prepayment') }}" class="add-button">+ Добавить предоплату</a>
+
+    <!-- Заголовок списка -->
+    <h2 class="prepayment-header">Заявки на предоплату</h2>
+
+    <!-- Список предоплат -->
+    <ul class="prepayment-list">
+        {% for prepayment in prepayments %}
+        <li class="prepayment-card">
+            <div class="prepayment-card-image-wrapper">
+                {% if prepayment.photo %}
+                    <img src="{{ url_for('uploaded_file', filename=prepayment.photo) }}" alt="фото" class="prepayment-card-image">
+                {% else %}
+                    <div class="prepayment-card-image" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 15px;">
+                        Нет фото
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="prepayment-card-content">
+                <div class="prepayment-card-header">
+                    <strong>{{ prepayment.product_name }}</strong>
+                    <span class="prepayment-status status-{{ prepayment.status }}">
+                        {% if prepayment.status == 'pending' %}Ожидает
+                        {% elif prepayment.status == 'approved' %}Одобрена
+                        {% elif prepayment.status == 'rejected' %}Отклонена
+                        {% elif prepayment.status == 'converted_to_sale' %}Переведена в продажу
+                        {% else %}{{ prepayment.status }}{% endif %}
+                    </span>
+                </div>
+                
+                <div class="prepayment-data-row">
+                    <span class="prepayment-data-label">Наименование</span>
+                    <span class="prepayment-data-value">{{ prepayment.product_name }}</span>
+                </div>
+                
+                {% if prepayment.reference %}
+                <div class="prepayment-data-row">
+                    <span class="prepayment-data-label">Reference</span>
+                    <span class="prepayment-data-value">{{ prepayment.reference }}</span>
+                </div>
+                {% endif %}
+                
+                {% if prepayment.item_year %}
+                <div class="prepayment-data-row">
+                    <span class="prepayment-data-label">Год изделия</span>
+                    <span class="prepayment-data-value">{{ prepayment.item_year }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="prepayment-data-row">
+                    <span class="prepayment-data-label">Комиссионный</span>
+                    <span class="prepayment-data-value">{% if prepayment.komissionnyy %}да{% else %}нет{% endif %}</span>
+                </div>
+                
+                {% if prepayment.investor %}
+                <div class="prepayment-data-row">
+                    <span class="prepayment-data-label">Инвестор</span>
+                    <span class="prepayment-data-value">{{ prepayment.investor.name }}</span>
+                </div>
+                {% endif %}
+                
+                {% if prepayment.client %}
+                <div class="prepayment-data-row">
+                    <span class="prepayment-data-label">Клиент</span>
+                    <span class="prepayment-data-value">{{ prepayment.client.full_name }}</span>
+                </div>
+                {% for label, val in prepayment.client.display_contacts() %}
+                <div class="prepayment-data-row" style="padding-left: 15px;">
+                    <span class="prepayment-data-label">{{ label }}</span>
+                    <span class="prepayment-data-value">{{ val }}</span>
+                </div>
+                {% endfor %}
+                {% endif %}
+                
+                <div class="prepayment-data-row">
+                    <span class="prepayment-data-label">Город</span>
+                    <span class="prepayment-data-value">{{ prepayment.city.name }}</span>
+                </div>
+                
+                {% if is_admin %}
+                <div class="prepayment-data-row">
+                    <span class="prepayment-data-label">Покупка</span>
+                    <span class="prepayment-data-value">{% if prepayment.buy_price %}{{ "%.0f"|format(prepayment.buy_price) }}${% else %}—{% endif %}</span>
+                </div>
+                {% endif %}
+                
+                <div class="prepayment-data-row">
+                    <span class="prepayment-data-label">Предоплата</span>
+                    <span class="prepayment-data-value">{{ "%.0f"|format(prepayment.prepayment_amount) }}$</span>
+                </div>
+                
+                <div class="prepayment-data-row">
+                    <span class="prepayment-data-label">Цена продажи</span>
+                    <span class="prepayment-data-value">{{ "%.0f"|format(prepayment.sell_price) }}$</span>
+                </div>
+                
+                <div class="prepayment-data-row">
+                    <span class="prepayment-data-label">Расход</span>
+                    <span class="prepayment-data-value">
+                        {% if prepayment.expenses_data %}
+                            {{ "%.0f"|format(prepayment.expenses_data|sum(attribute='amount')) }}$
+                        {% else %}
+                            0$
+                        {% endif %}
+                    </span>
+                </div>
+                
+                {% if prepayment.expenses_data %}
+                <div class="expenses-in-card">
+                    {% for exp in prepayment.expenses_data %}
+                    <div class="expense-item-in-card">
+                        <strong>{{ exp.expense_type.name }}</strong>
+                        <span class="amount">{{ "%.0f"|format(exp.amount) }}$</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                {% if prepayment.bonus and prepayment.bonus > 0 %}
+                <div class="expenses-in-card">
+                    <div class="expense-item-in-card">
+                        <strong>Бонус менеджера</strong>
+                        <span class="amount">{{ "%.0f"|format(prepayment.bonus) }}$</span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="prepayment-data-row">
+                    <span class="prepayment-data-label">Продавец</span>
+                    <span class="prepayment-data-value">{{ prepayment.employee.name }}</span>
+                </div>
+                
+                <div class="prepayment-data-row">
+                    <span class="prepayment-data-label">Дата</span>
+                    <span class="prepayment-data-value">
+                        {% set months_ru = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'] %}
+                        {{ prepayment.date.day }} {{ months_ru[prepayment.date.month - 1] }} {{ prepayment.date.year }}
+                    </span>
+                </div>
+                
+                {% if prepayment.komplektatsiya %}
+                <div class="prepayment-data-row">
+                    <span class="prepayment-data-label">Комплектация</span>
+                    <span class="prepayment-data-value">{{ prepayment.komplektatsiya }}</span>
+                </div>
+                {% endif %}
+                
+                {% if prepayment.comment %}
+                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1);">
+                    <div class="prepayment-data-label" style="margin-bottom: 5px;">Комментарий</div>
+                    <div style="white-space: pre-wrap; color: #333; font-size: 14px; line-height: 1.5;">{{ prepayment.comment }}</div>
+                </div>
+                {% endif %}
+                
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    {% if prepayment.status == 'pending' %}
+                    <a href="{{ url_for('edit_prepayment', prepayment_id=prepayment.id) }}" class="edit-btn" style="flex: 1; margin-top: 0;">Изменить</a>
+                    {% endif %}
+                    
+                    {% if prepayment.status == 'pending' or prepayment.status == 'approved' %}
+                    <form method="POST" action="{{ url_for('complete_prepayment', prepayment_id=prepayment.id) }}" style="flex: 1; margin: 0;" onsubmit="return confirm('Завершить сделку и перевести предоплату в продажу?');">
+                        <button type="submit" class="complete-btn" style="margin-top: 0;">Завершить сделку</button>
+                    </form>
+                    {% endif %}
+                </div>
+                
+                {% if prepayment.status == 'pending' and is_admin %}
+                <form method="POST" action="{{ url_for('delete_prepayment', prepayment_id=prepayment.id) }}" class="delete-form" onsubmit="return confirm('Вы уверены, что хотите удалить эту предоплату?');">
+                    <button type="submit" class="delete-btn">Удалить</button>
+                </form>
+                {% endif %}
+            </div>
+        </li>
+        {% else %}
+        <li class="empty-state">
+            <div style="font-size: 48px; margin-bottom: 20px;">📋</div>
+            <p style="font-size: 18px;">Нет заявок на предоплату</p>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

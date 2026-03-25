@@ -1,0 +1,1193 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .add-sale-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;  /* Отступ для фиксированного логотипа */
+    }
+    
+    /* Логотип - фиксированный */
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .logo-icon a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+    }
+    
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    .page-title {
+        text-align: center;
+        font-size: 18px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 30px;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 12px 24px;
+        border-radius: 43px;
+        display: inline-block;
+        width: auto;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    /* Секция фотографии */
+    .photo-section {
+        margin-bottom: 25px;
+    }
+    
+    .photo-label {
+        font-size: 26px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+        display: block;
+        text-align: center;
+    }
+    
+    .photo-upload-card {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 0;
+        text-align: center;
+        cursor: pointer;
+        border: 2px dashed transparent;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .photo-upload-card:hover {
+        border-color: #B58358;
+    }
+    
+    .photo-upload-icon {
+        font-size: 48px;
+        margin-bottom: 10px;
+    }
+    
+    .photo-upload-text {
+        font-size: 16px;
+        color: #333;
+    }
+    
+    .photo-preview {
+        max-width: 100%;
+        width: 100%;
+        object-fit: contain;
+        display: block;
+        flex: 1;
+    }
+    
+    .photo-preview.active {
+        display: block;
+        border-radius: 20px 20px 0 0;
+        min-height: 300px;
+    }
+    
+    .replace-photo-btn {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #B58358;
+        color: white;
+        padding: 12px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        border-radius: 0 0 20px 20px;
+    }
+    
+    /* Поля ввода */
+    .form-field {
+        margin-bottom: 20px;
+    }
+    
+    .field-label {
+        font-size: 16px;
+        color: #333;
+        display: block;
+        font-weight: 500;
+        padding: 15px 20px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    
+    .field-input-card {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .field-input-wrapper {
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+    
+    .field-input-card input,
+    .field-input-card select,
+    .field-input-card textarea {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-size: 16px;
+        color: #333;
+        outline: none;
+        width: 100%;
+        padding: 0;
+        font-family: inherit;
+        resize: vertical;
+    }
+    
+    .field-input-card textarea {
+        min-height: 60px;
+        padding: 5px 0;
+    }
+    
+    .field-input-card input::placeholder,
+    .field-input-card select::placeholder,
+    .field-input-card textarea::placeholder {
+        color: #999;
+        opacity: 0.7;
+    }
+    
+    .field-input-card select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right center;
+        padding-right: 25px;
+    }
+    
+    /* Поле даты — подсказка для мобильных */
+    .date-field-wrapper .field-input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .date-field-wrapper input[type="date"] {
+        flex: 1;
+        min-height: 44px;
+    }
+    .date-field-hint {
+        font-size: 13px;
+        color: #888;
+        margin-top: 8px;
+        padding: 0 20px 10px;
+        display: block;
+    }
+    .date-icon {
+        font-size: 22px;
+        flex-shrink: 0;
+        opacity: 0.7;
+    }
+    
+    /* Плашка "Добавить нового ..." */
+    .inline-add-btn { display:flex; align-items:center; justify-content:space-between; background:#B58358; color:white; padding:14px 20px; border-radius:0 0 18px 18px; cursor:pointer; font-size:15px; font-weight:500; margin-top:-4px; user-select:none; transition:background 0.2s; }
+    .inline-add-btn:hover { background:#a07248; }
+    .inline-add-btn .plus-icon { font-size:20px; font-weight:300; line-height:1; }
+    .inline-add-form { background:white; border-radius:18px; padding:18px 20px 14px; margin-top:10px; box-shadow:0 2px 10px rgba(0,0,0,0.08); display:none; }
+    .inline-add-form.open { display:block; }
+    .inline-add-form .iaf-field { margin-bottom:12px; }
+    .inline-add-form .iaf-label { font-size:13px; color:#888; margin-bottom:4px; display:block; }
+    .inline-add-form .iaf-input { width:100%; padding:10px 14px; border:1px solid #e0d5c8; border-radius:10px; font-size:15px; background:#faf9f7; box-sizing:border-box; }
+    .inline-add-form .iaf-input:focus { outline:none; border-color:#B58358; }
+    .inline-add-form .iaf-hint { font-size:12px; color:#aaa; margin:-6px 0 10px; }
+    .inline-add-form .iaf-error { color:#c00; font-size:13px; margin-bottom:8px; display:none; }
+    .inline-add-form .iaf-submit { width:100%; padding:12px; background:#B58358; color:white; border:none; border-radius:12px; font-size:15px; font-weight:500; cursor:pointer; transition:background 0.2s; }
+    .inline-add-form .iaf-submit:hover { background:#a07248; }
+    .inline-add-form .iaf-submit:disabled { background:#ccc; cursor:default; }
+
+    /* Поиск клиента */
+    .client-search-wrapper { display: flex; align-items: center; flex-wrap: wrap; }
+    .client-search-wrapper input[type="text"] { flex: 1; min-width: 0; }
+    .client-search-results { max-height: 200px; overflow-y: auto; border-top: 1px solid rgba(0,0,0,0.08); display: none; }
+    .client-search-results.active { display: block; }
+    .client-search-item { padding: 12px 20px; cursor: pointer; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 14px; }
+    .client-search-item:hover { background: rgba(181, 131, 88, 0.1); }
+    .client-search-item .client-name { font-weight: 500; color: #333; }
+    .client-search-item .client-contacts { font-size: 12px; color: #666; margin-top: 2px; }
+    
+    /* Расходы */
+    .expense-section {
+        margin-bottom: 20px;
+    }
+    
+    .expense-list {
+        margin-top: 8px;
+    }
+    
+    .expense-item {
+        background: rgba(9, 9, 9, 0.15);
+        border-radius: 12px;
+        padding: 8px 12px;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .expense-item-info {
+        flex: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .expense-item-name {
+        font-size: 14px;
+        color: #333;
+    }
+    
+    .expense-item-amount {
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
+        margin-right: 8px;
+    }
+    
+    .remove-expense-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #B58358;
+        color: white;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        line-height: 1;
+    }
+    
+    .add-expense-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #B58358;
+        color: white;
+        border: none;
+        font-size: 28px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 10px auto;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Модальное окно */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-overlay.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: #F7F3EC;
+        border-radius: 25px;
+        padding: 30px;
+        width: 90%;
+        max-width: 400px;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .modal-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: #333;
+        text-align: center;
+        margin-bottom: 25px;
+    }
+    
+    .modal-field {
+        margin-bottom: 20px;
+    }
+    
+    .modal-field-label {
+        font-size: 16px;
+        color: #333;
+        margin-bottom: 10px;
+        display: block;
+        font-weight: 500;
+        cursor: pointer;
+    }
+    
+    .modal-input-card {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 0;
+    }
+    
+    .modal-input-wrapper {
+        padding: 15px 20px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    
+    .modal-input-wrapper:last-child {
+        border-bottom: none;
+    }
+    
+    .modal-input-card input,
+    .modal-input-card select {
+        width: 100%;
+        border: none;
+        background: transparent;
+        font-size: 16px;
+        color: #333;
+        outline: none;
+        padding: 0;
+    }
+    
+    .modal-input-card input::placeholder {
+        color: #999;
+        opacity: 0.7;
+    }
+    
+    .modal-input-card select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right center;
+        padding-right: 25px;
+    }
+    
+    .modal-submit-btn {
+        width: 100%;
+        background: #B58358;
+        color: white;
+        padding: 15px;
+        border-radius: 20px;
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        margin-top: 20px;
+    }
+    
+    /* Кнопка отправки */
+    .submit-btn {
+        width: 65%;
+        margin: 40px auto 0;
+        display: block;
+        background: #B58358;
+        color: white;
+        padding: 15px;
+        border-radius: 20px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .hidden-input {
+        display: none;
+    }
+    
+    /* Скрытые формы */
+    .additional-forms {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .form-toggle {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 12px 20px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 16px;
+        color: #333;
+        transition: all 0.3s ease;
+    }
+    
+    .form-toggle:hover {
+        background: rgba(255, 255, 255, 0.7);
+    }
+    
+    .form-toggle::after {
+        content: '▼';
+        transition: transform 0.3s ease;
+    }
+    
+    .form-toggle.active::after {
+        transform: rotate(180deg);
+    }
+    
+    .collapsible-form {
+        display: none;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .collapsible-form.active {
+        display: block;
+    }
+    
+    .collapsible-form .field-input-card {
+        margin-bottom: 15px;
+    }
+    
+    .collapsible-form-btn {
+        width: 100%;
+        background: #B58358;
+        color: white;
+        padding: 12px;
+        border-radius: 15px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+    }
+    
+    @media (min-width: 768px) {
+        .add-sale-container {
+            max-width: 600px;
+            padding-top: 90px;
+        }
+    }
+</style>
+
+<!-- Логотип - фиксированный -->
+<div class="logo-icon">
+    <a href="{{ url_for('main') }}">
+        <img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo">
+    </a>
+</div>
+
+<div class="add-sale-container">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1 class="page-title">Изменение продажи</h1>
+    </div>
+    
+    <form method="POST" enctype="multipart/form-data" id="editSaleForm">
+        <!-- Фотография -->
+        <div class="photo-section">
+            <label class="photo-label" for="photo-input">Фотография</label>
+            <div class="photo-upload-card">
+                {% if sale.photo %}
+                    <img src="{{ url_for('uploaded_file', filename=sale.photo) }}" id="photo-preview" class="photo-preview active" alt="Preview">
+                    <button type="button" class="replace-photo-btn" onclick="document.getElementById('photo-input').click()">Заменить фото</button>
+                {% else %}
+                    <div onclick="document.getElementById('photo-input').click()">
+                        <div class="photo-upload-icon">📷</div>
+                        <div class="photo-upload-text">Загрузить фото</div>
+                        <img id="photo-preview" class="photo-preview" alt="Preview">
+                    </div>
+                {% endif %}
+            </div>
+            <input type="file" name="photo" id="photo-input" accept="image/*" class="hidden-input">
+        </div>
+        
+        <!-- Категория -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="category">Категория</label>
+                <div class="field-input-wrapper">
+                    <select id="category" name="category">
+                        <option value="">Не указана</option>
+                        {% for value, label in product_categories %}
+                        <option value="{{ value }}" {% if sale.category == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Наименование -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="product_name">Наименование <span class="required-mark">*</span></label>
+                <div class="field-input-wrapper">
+                    <input type="text" id="product_name" name="product_name" value="{{ sale.product_name }}" required placeholder="Введи наименование">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reference -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="reference">Reference</label>
+                <div class="field-input-wrapper">
+                    <input type="text" id="reference" name="reference" value="{{ sale.reference or '' }}" placeholder="Введи Reference">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Год изделия (необязательное) -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="item_year">Год изделия</label>
+                <div class="field-input-wrapper">
+                    <input type="number" id="item_year" name="item_year" min="1900" max="2100" value="{{ sale.item_year or '' }}" placeholder="Напр. 2024">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Клиент -->
+        <div class="form-field">
+            <div class="field-input-card" style="border-radius:20px 20px 0 0;">
+                <label class="field-label" for="client-search-input">Клиент</label>
+                <div class="field-input-wrapper client-search-wrapper">
+                    <input type="text" id="client-search-input" value="{% if sale.client %}{{ sale.client.full_name }}{% endif %}" placeholder="Введите для поиска или выберите клиента..." autocomplete="off" style="flex:1; min-width:0;">
+                    <input type="hidden" name="client_id" id="client-id-input" value="{% if sale.client_id %}{{ sale.client_id }}{% endif %}">
+                    <span class="client-clear-btn" id="client-clear-btn" style="{% if not sale.client %}display:none;{% endif %} cursor:pointer; color:#888; padding:0 5px; font-size:18px;" title="Очистить">✕</span>
+                </div>
+                <div id="client-search-results" class="client-search-results"></div>
+            </div>
+            <div class="inline-add-btn" onclick="toggleInlineForm('client-inline-form', this)">
+                <span>Добавить нового клиента</span>
+                <span class="plus-icon" id="client-inline-icon">+</span>
+            </div>
+            <div id="client-inline-form" class="inline-add-form">
+                <div class="iaf-error" id="client-iaf-error"></div>
+                <div class="iaf-field"><label class="iaf-label">ФИО <span style="color:#c00">*</span></label><input type="text" class="iaf-input" id="iaf-client-full-name" placeholder="Иванов Иван Иванович"></div>
+                <div class="iaf-field"><label class="iaf-label">Телефон</label><input type="text" class="iaf-input" id="iaf-client-phone" placeholder="+7 999 123-45-67"></div>
+                <div class="iaf-field"><label class="iaf-label">Instagram</label><input type="text" class="iaf-input" id="iaf-client-instagram" placeholder="@username"></div>
+                <div class="iaf-field"><label class="iaf-label">Telegram</label><input type="text" class="iaf-input" id="iaf-client-telegram" placeholder="@username или +7..."></div>
+                <div class="iaf-field"><label class="iaf-label">Почта</label><input type="email" class="iaf-input" id="iaf-client-email" placeholder="email@example.com"></div>
+                <div class="iaf-field"><label class="iaf-label">Дата рождения</label><input type="date" class="iaf-input" id="iaf-client-birth-date"></div>
+                <p class="iaf-hint">ФИО и хотя бы один контакт обязательны</p>
+                <button type="button" class="iaf-submit" id="iaf-client-submit" onclick="submitInlineClient()">Добавить клиента</button>
+            </div>
+        </div>
+        
+        <!-- Инвестор / Комиссионный клиент (только для админа) -->
+        {% set _sale_inv_is_comm = sale.investor and sale.investor.is_commission_client %}
+        {% if is_admin %}
+        <div class="form-field">
+            <div class="field-input-card" style="border-radius:20px 20px 0 0;">
+                <label class="field-label" for="investor_id">{% if _sale_inv_is_comm %}Комиссионный клиент{% else %}Инвестор{% endif %}</label>
+                <div class="field-input-wrapper">
+                    <select id="investor_id" name="investor_id">
+                        <option value="">{% if _sale_inv_is_comm %}Выбери комиссионного клиента{% else %}Выбери инвестора{% endif %}</option>
+                        {% for investor in investors %}
+                            <option value="{{ investor.id }}" {% if sale.investor_id and investor.id == sale.investor_id %}selected{% endif %}>{{ investor.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="inline-add-btn" onclick="toggleInlineForm('investor-inline-form', this)">
+                <span>{% if _sale_inv_is_comm %}Добавить нового комиссионного клиента{% else %}Добавить нового инвестора{% endif %}</span>
+                <span class="plus-icon" id="investor-inline-icon">+</span>
+            </div>
+            <div id="investor-inline-form" class="inline-add-form">
+                <div class="iaf-error" id="investor-iaf-error"></div>
+                <div class="iaf-field"><label class="iaf-label">Псевдоним / Имя <span style="color:#c00">*</span></label><input type="text" class="iaf-input" id="iaf-inv-name" placeholder="Короткое имя"></div>
+                <div class="iaf-field"><label class="iaf-label">ФИО</label><input type="text" class="iaf-input" id="iaf-inv-full-name" placeholder="Полное имя"></div>
+                <div class="iaf-field"><label class="iaf-label">Телефон</label><input type="text" class="iaf-input" id="iaf-inv-phone" placeholder="+7..."></div>
+                <div class="iaf-field"><label class="iaf-label">Почта</label><input type="email" class="iaf-input" id="iaf-inv-email" placeholder="email@example.com"></div>
+                <button type="button" class="iaf-submit" id="iaf-inv-submit" onclick="submitInlineInvestor('investor_id','investor-iaf-error','investor-inline-form','investor-inline-icon','iaf-inv-name','iaf-inv-full-name','iaf-inv-phone','iaf-inv-email')">{% if _sale_inv_is_comm %}Добавить комиссионного клиента{% else %}Добавить инвестора{% endif %}</button>
+            </div>
+        </div>
+        {% else %}
+        <!-- Для менеджера показываем инвестора/комиссионного клиента только для просмотра -->
+        {% if sale.investor %}
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="investor_id">{% if _sale_inv_is_comm %}Комиссионный клиент{% else %}Инвестор{% endif %}</label>
+                <div class="field-input-wrapper">
+                    <input type="text" id="investor_id" value="{{ sale.investor.name }}" readonly style="background: #f0f0f0; cursor: not-allowed;">
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
+        
+        <!-- Город -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="city_id">Город <span class="required-mark">*</span></label>
+                <div class="field-input-wrapper">
+                    <select id="city_id" name="city_id" required>
+                        <option value="">Выбери город</option>
+                        {% for city in cities %}
+                            <option value="{{ city.id }}" {% if city.id == sale.city_id %}selected{% endif %}>{{ city.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        {% if session.get('is_admin', False) %}
+        <!-- Покупка -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="buy_price">Покупка <span class="required-mark">*</span></label>
+                <div class="field-input-wrapper">
+                    <input type="number" id="buy_price" step="0.01" name="buy_price" value="{{ sale.buy_price }}" required placeholder="Введи цену покупки">
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <input type="hidden" name="buy_price" value="{{ sale.buy_price }}">
+        {% endif %}
+        
+        <!-- Продажа -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="sell_price">Продажа <span class="required-mark">*</span></label>
+                <div class="field-input-wrapper">
+                    <input type="number" id="sell_price" step="0.01" name="sell_price" value="{{ sale.sell_price }}" required placeholder="Введи цену продажи">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Бонус менеджера -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="bonus">Бонус менеджера</label>
+                <div class="field-input-wrapper">
+                    <input type="number" id="bonus" step="0.01" name="bonus" value="{{ sale.bonus if sale.bonus else 0 }}" min="0" placeholder="Введи бонус (необязательно)">
+                </div>
+            </div>
+        </div>
+        {% if is_admin and (sale.murad_bonus | default(0))|float > 0 %}
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label">Бонус Мурада</label>
+                <div class="field-input-wrapper">
+                    <span>{{ "%.2f"|format(sale.murad_bonus) }}$</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if is_admin and sale.additional_bonuses %}
+        {% for ab in sale.additional_bonuses %}
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label">Доп бонус ({{ ab.employee.name if ab.employee else '' }})</label>
+                <div class="field-input-wrapper">
+                    <span>{{ "%.2f"|format(ab.amount) }}$</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+        
+        <!-- Комплектация -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="komplektatsiya">Комплектация</label>
+                <div class="field-input-wrapper">
+                    <select id="komplektatsiya" name="komplektatsiya">
+                        <option value="">Выберите комплектацию</option>
+                        <option value="Полный комплект" {% if sale.komplektatsiya == 'Полный комплект' %}selected{% endif %}>Полный комплект</option>
+                        <option value="Только часы" {% if sale.komplektatsiya == 'Только часы' %}selected{% endif %}>Только часы</option>
+                        <option value="Только коробка" {% if sale.komplektatsiya == 'Только коробка' %}selected{% endif %}>Только коробка</option>
+                        <option value="Только документы" {% if sale.komplektatsiya == 'Только документы' %}selected{% endif %}>Только документы</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Расходы -->
+        <div class="expense-section">
+            <div class="form-field">
+                <div class="field-input-card">
+                    <div class="field-label" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Расход</span>
+                        <span style="font-size: 16px; color: #333; font-weight: 500;" id="total-expense">0$</span>
+                    </div>
+                    <div class="expense-list" id="expenses-list">
+                        <!-- Список расходов будет добавляться сюда -->
+                    </div>
+                    <div style="text-align: center;">
+                        <button type="button" class="add-expense-btn" onclick="openExpenseModal()">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Скрытые поля для отправки формы -->
+        <div id="expenses-hidden-inputs"></div>
+        
+        <!-- Модальное окно для добавления расхода -->
+        <div class="modal-overlay" id="expense-modal">
+            <div class="modal-content">
+                <h2 class="modal-title">Добавить расход</h2>
+                <div class="modal-field">
+                    <label class="modal-field-label" for="expense-type-select">Наименование <span class="required-mark">*</span></label>
+                    <div class="modal-input-card">
+                        <div class="modal-input-wrapper">
+                            <select id="expense-type-select">
+                                <option value="">Выберите тип расхода</option>
+                                {% for et in expense_types %}
+                                    <option value="{{ et.id }}" data-name="{{ et.name }}">{{ et.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-field">
+                    <label class="modal-field-label" for="expense-amount-input">Сумма <span class="required-mark">*</span></label>
+                    <div class="modal-input-card">
+                        <div class="modal-input-wrapper">
+                            <input type="number" step="0.01" id="expense-amount-input" placeholder="Введи сумму">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="modal-submit-btn" onclick="saveExpense()">Добавить</button>
+            </div>
+        </div>
+        
+        <!-- Продавец (только админ может изменить, менеджер видит только себя) -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="employee_id">Продавец <span class="required-mark">*</span></label>
+                <div class="field-input-wrapper">
+                    {% if is_admin %}
+                    <select id="employee_id" name="employee_id" required>
+                        <option value="">Выбери продавца</option>
+                        {% for employee in employees %}
+                            <option value="{{ employee.id }}" {% if employee.id == sale.employee_id %}selected{% endif %}>{{ employee.name }}</option>
+                        {% endfor %}
+                    </select>
+                    {% else %}
+                    <input type="text" value="{{ sale.employee.name }}" readonly style="background: #f0f0f0; cursor: not-allowed;">
+                    <input type="hidden" name="employee_id" value="{{ sale.employee_id }}">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Дата -->
+        <div class="form-field date-field-wrapper">
+            <div class="field-input-card">
+                <label class="field-label">Дата</label>
+                <div class="field-input-wrapper">
+                    <span class="date-icon" aria-hidden="true">📅</span>
+                    <input type="date" name="date" value="{{ sale.date.strftime('%Y-%m-%d') }}" id="edit-sale-date-input">
+                </div>
+                <span class="date-field-hint">Нажмите для выбора даты</span>
+            </div>
+        </div>
+        
+        <!-- Комментарий -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="comment">Комментарий</label>
+                <div class="field-input-wrapper">
+                    <textarea id="comment" name="comment" rows="3" placeholder="Введите комментарий (необязательно)">{% if sale.comment %}{{ sale.comment }}{% endif %}</textarea>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Кнопка отправки -->
+        <button type="submit" class="submit-btn">Сохранить изменения</button>
+    </form>
+    
+    <!-- Дополнительные формы (скрыты по умолчанию) -->
+    <div class="additional-forms">
+        <div class="form-toggle" onclick="toggleForm('city-form')">
+            Добавить новый город
+        </div>
+        <div id="city-form" class="collapsible-form">
+            <form method="POST" action="{{ url_for('add_city') }}">
+                <div class="field-input-card">
+                    <label class="field-label">Название города <span class="required-mark">*</span></label>
+                    <div class="field-input-wrapper">
+                        <input type="text" name="name" required placeholder="Название города">
+                    </div>
+                </div>
+                <button type="submit" class="collapsible-form-btn">Добавить город</button>
+            </form>
+        </div>
+        
+        {% if is_admin %}
+        <div class="form-toggle" onclick="toggleForm('expense-type-form')">
+            Добавить новый тип расхода
+        </div>
+        <div id="expense-type-form" class="collapsible-form">
+            <form method="POST" action="{{ url_for('add_expense_type') }}">
+                <div class="field-input-card">
+                    <label class="field-label">Название типа <span class="required-mark">*</span></label>
+                    <div class="field-input-wrapper">
+                        <input type="text" name="name" required placeholder="Название типа">
+                    </div>
+                </div>
+                <button type="submit" class="collapsible-form-btn">Добавить тип расхода</button>
+            </form>
+        </div>
+        {% endif %}
+        
+        <div class="form-toggle" onclick="toggleForm('client-form')">
+            Добавить нового клиента
+        </div>
+        <div id="client-form" class="collapsible-form">
+            <form method="POST" action="{{ url_for('add_client') }}">
+                <div class="field-input-card">
+                    <label class="field-label">ФИО <span class="required-mark">*</span></label>
+                    <div class="field-input-wrapper">
+                        <input type="text" name="full_name" required placeholder="Иванов Иван Иванович">
+                    </div>
+                </div>
+                <div class="field-input-card">
+                    <label class="field-label">Телефон</label>
+                    <div class="field-input-wrapper">
+                        <input type="text" name="phone" placeholder="+7 999 123-45-67">
+                    </div>
+                </div>
+                <div class="field-input-card">
+                    <label class="field-label">Instagram</label>
+                    <div class="field-input-wrapper">
+                        <input type="text" name="instagram" placeholder="@username">
+                    </div>
+                </div>
+                <div class="field-input-card">
+                    <label class="field-label">Telegram</label>
+                    <div class="field-input-wrapper">
+                        <input type="text" name="telegram" placeholder="@username или +7...">
+                    </div>
+                </div>
+                <div class="field-input-card">
+                    <label class="field-label">Почта</label>
+                    <div class="field-input-wrapper">
+                        <input type="email" name="email" placeholder="email@example.com">
+                    </div>
+                </div>
+                <div class="field-input-card">
+                    <label class="field-label">Дата рождения</label>
+                    <div class="field-input-wrapper">
+                        <input type="date" name="birth_date" placeholder="ДД.ММ.ГГГГ">
+                    </div>
+                </div>
+                <p style="font-size:13px; color:#666; margin:0 0 10px 0;">ФИО и хотя бы один контакт обязательны.</p>
+                <button type="submit" class="collapsible-form-btn">Добавить клиента</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Поиск клиентов (edit_sale)
+    let clientSearchTimer;
+    const clientSearchInput = document.getElementById('client-search-input');
+    const clientIdInput = document.getElementById('client-id-input');
+    const clientResults = document.getElementById('client-search-results');
+    const clientClearBtn = document.getElementById('client-clear-btn');
+    if (clientSearchInput) {
+        clientSearchInput.addEventListener('input', function() {
+            if (clientIdInput.value) { clientIdInput.value = ''; clientClearBtn.style.display = 'none'; }
+            clearTimeout(clientSearchTimer);
+            clientSearchTimer = setTimeout(() => fetchClients(this.value.trim()), 300);
+        });
+        clientSearchInput.addEventListener('focus', function() { if (!clientIdInput.value) fetchClients(this.value.trim()); });
+    }
+    if (clientClearBtn) {
+        clientClearBtn.addEventListener('click', function() {
+            clientIdInput.value = ''; clientSearchInput.value = ''; clientClearBtn.style.display = 'none';
+            clientResults.classList.remove('active'); clientResults.innerHTML = '';
+        });
+    }
+    document.addEventListener('click', function(e) {
+        if (clientResults && !e.target.closest('.client-search-wrapper') && !e.target.closest('#client-search-results')) clientResults.classList.remove('active');
+    });
+    function fetchClients(q) {
+        fetch('/api/clients/search?q=' + encodeURIComponent(q) + '&limit=15').then(r => r.json()).then(data => {
+            clientResults.innerHTML = '';
+            if (data.length === 0) {
+                clientResults.innerHTML = '<div class="client-search-item" style="color:#999;">Клиенты не найдены.</div>';
+            } else {
+                data.forEach(c => {
+                    const div = document.createElement('div');
+                    div.className = 'client-search-item';
+                    const contacts = [c.phone, c.telegram, c.email, c.instagram].filter(Boolean).join(' · ');
+                    div.innerHTML = '<span class="client-name">' + (c.full_name || '').replace(/</g,'&lt;') + '</span>' + (contacts ? '<div class="client-contacts">' + contacts.replace(/</g,'&lt;') + '</div>' : '');
+                    div.onclick = () => selectClient(c.id, c.full_name);
+                    clientResults.appendChild(div);
+                });
+            }
+            clientResults.classList.add('active');
+        });
+    }
+    function selectClient(id, name) {
+        clientIdInput.value = id; clientSearchInput.value = name; clientClearBtn.style.display = 'inline';
+        clientResults.classList.remove('active'); clientResults.innerHTML = '';
+    }
+    
+    // Превью фотографии
+    document.getElementById('photo-input').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('photo-preview');
+                preview.src = e.target.result;
+                preview.classList.add('active');
+                
+                // Скрываем иконку и текст загрузки, если они есть
+                const uploadText = document.querySelector('.photo-upload-text');
+                const uploadIcon = document.querySelector('.photo-upload-icon');
+                if (uploadText) uploadText.style.display = 'none';
+                if (uploadIcon) uploadIcon.style.display = 'none';
+                
+                // Показываем кнопку "Заменить фото", если её нет
+                let replaceBtn = document.querySelector('.replace-photo-btn');
+                if (!replaceBtn) {
+                    replaceBtn = document.createElement('button');
+                    replaceBtn.type = 'button';
+                    replaceBtn.className = 'replace-photo-btn';
+                    replaceBtn.textContent = 'Заменить фото';
+                    replaceBtn.onclick = function() { document.getElementById('photo-input').click(); };
+                    document.querySelector('.photo-upload-card').appendChild(replaceBtn);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Массив для хранения расходов (загружаем существующие)
+    let expenses = [
+        {% for expense in sale.expenses %}
+        {
+            typeId: '{{ expense.expense_type_id }}',
+            name: '{{ expense.expense_type.name }}',
+            amount: {{ expense.amount }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    // Открытие модального окна
+    function openExpenseModal() {
+        document.getElementById('expense-modal').classList.add('active');
+        document.getElementById('expense-type-select').value = '';
+        document.getElementById('expense-amount-input').value = '';
+    }
+    
+    // Закрытие модального окна
+    function closeExpenseModal() {
+        document.getElementById('expense-modal').classList.remove('active');
+    }
+    
+    // Сохранение расхода
+    function saveExpense() {
+        const typeSelect = document.getElementById('expense-type-select');
+        const selectedOption = typeSelect.options[typeSelect.selectedIndex];
+        const typeId = typeSelect.value;
+        const typeName = selectedOption ? selectedOption.getAttribute('data-name') || selectedOption.text : '';
+        const amount = parseFloat(document.getElementById('expense-amount-input').value);
+        
+        if (!typeId || !amount || amount <= 0) {
+            alert('Заполните все поля корректно');
+            return;
+        }
+        
+        // Добавляем расход в массив
+        expenses.push({
+            typeId: typeId,
+            name: typeName,
+            amount: amount
+        });
+        
+        // Обновляем отображение
+        renderExpenses();
+        updateTotalExpense();
+        closeExpenseModal();
+    }
+    
+    // Удаление расхода
+    function removeExpense(index) {
+        expenses.splice(index, 1);
+        renderExpenses();
+        updateTotalExpense();
+    }
+    
+    // Отображение списка расходов
+    function renderExpenses() {
+        const container = document.getElementById('expenses-list');
+        const hiddenInputs = document.getElementById('expenses-hidden-inputs');
+        
+        container.innerHTML = '';
+        hiddenInputs.innerHTML = '';
+        
+        expenses.forEach((expense, index) => {
+            // Создаем элемент списка
+            const item = document.createElement('div');
+            item.className = 'expense-item';
+            item.innerHTML = `
+                <div class="expense-item-info">
+                    <span class="expense-item-name">${expense.name}</span>
+                    <span class="expense-item-amount">${expense.amount.toFixed(2)}$</span>
+                </div>
+                <button type="button" class="remove-expense-btn" onclick="removeExpense(${index})">−</button>
+            `;
+            container.appendChild(item);
+            
+            // Создаем скрытые поля для формы
+            const typeInput = document.createElement('input');
+            typeInput.type = 'hidden';
+            typeInput.name = 'expense_type_id';
+            typeInput.value = expense.typeId;
+            
+            const amountInput = document.createElement('input');
+            amountInput.type = 'hidden';
+            amountInput.name = 'expense_amount';
+            amountInput.value = expense.amount;
+            
+            hiddenInputs.appendChild(typeInput);
+            hiddenInputs.appendChild(amountInput);
+        });
+    }
+    
+    // Переключение дополнительных форм
+    function toggleForm(formId) {
+        const form = document.getElementById(formId);
+        const toggle = form.previousElementSibling;
+        
+        form.classList.toggle('active');
+        toggle.classList.toggle('active');
+    }
+    
+    // Обновление общей суммы расходов
+    function updateTotalExpense() {
+        let total = 0;
+        expenses.forEach(expense => {
+            total += expense.amount;
+        });
+        document.getElementById('total-expense').textContent = total.toFixed(2) + '$';
+    }
+    
+    // Закрытие модального окна при клике вне его
+    document.getElementById('expense-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeExpenseModal();
+        }
+    });
+    
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+        renderExpenses();
+        updateTotalExpense();
+        {% if new_client %}
+        if (clientIdInput && clientSearchInput && clientClearBtn) {
+            selectClient({{ new_client.id }}, {{ new_client.full_name|tojson }});
+        }
+        {% endif %}
+    });
+
+    function toggleInlineForm(formId, btn) {
+        const form = document.getElementById(formId);
+        const isOpen = form.classList.contains('open');
+        form.classList.toggle('open', !isOpen);
+        const icon = btn ? btn.querySelector('.plus-icon') : null;
+        if (icon) icon.textContent = isOpen ? '+' : '×';
+    }
+    function submitInlineClient() {
+        const btn = document.getElementById('iaf-client-submit');
+        const errEl = document.getElementById('client-iaf-error');
+        errEl.style.display = 'none';
+        const full_name = document.getElementById('iaf-client-full-name').value.trim();
+        const phone = document.getElementById('iaf-client-phone').value.trim();
+        const instagram = document.getElementById('iaf-client-instagram').value.trim();
+        const telegram = document.getElementById('iaf-client-telegram').value.trim();
+        const email = document.getElementById('iaf-client-email').value.trim();
+        const birth_date = document.getElementById('iaf-client-birth-date').value;
+        if (!full_name) { errEl.textContent = 'Введите ФИО'; errEl.style.display = 'block'; return; }
+        if (!phone && !instagram && !telegram && !email) { errEl.textContent = 'Укажите хотя бы один контакт'; errEl.style.display = 'block'; return; }
+        btn.disabled = true; btn.textContent = 'Сохранение...';
+        fetch('/api/add_client', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({full_name,phone,instagram,telegram,email,birth_date}) })
+        .then(r=>r.json()).then(data => {
+            if (data.success) {
+                document.getElementById('client-id-input').value = data.id;
+                document.getElementById('client-search-input').value = data.full_name;
+                document.getElementById('client-clear-btn').style.display = 'inline';
+                document.getElementById('client-search-results').classList.remove('active');
+                document.getElementById('client-inline-form').classList.remove('open');
+                document.getElementById('client-inline-icon').textContent = '+';
+                ['iaf-client-full-name','iaf-client-phone','iaf-client-instagram','iaf-client-telegram','iaf-client-email','iaf-client-birth-date'].forEach(id => document.getElementById(id).value = '');
+            } else { errEl.textContent = data.error||'Ошибка'; errEl.style.display='block'; }
+        }).catch(()=>{ errEl.textContent='Ошибка сети'; errEl.style.display='block'; })
+        .finally(()=>{ btn.disabled=false; btn.textContent='Добавить клиента'; });
+    }
+    function submitInlineInvestor(selectId, errId, formId, iconId, nameId, fullNameId, phoneId, emailId) {
+        const btn = document.getElementById('iaf-inv-submit');
+        const errEl = document.getElementById(errId);
+        errEl.style.display = 'none';
+        const name = document.getElementById(nameId).value.trim();
+        const full_name = document.getElementById(fullNameId).value.trim();
+        const phone = document.getElementById(phoneId).value.trim();
+        const email = document.getElementById(emailId).value.trim();
+        if (!name) { errEl.textContent = 'Введите псевдоним'; errEl.style.display='block'; return; }
+        btn.disabled = true; btn.textContent = 'Сохранение...';
+        fetch('/api/add_investor', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name,full_name,phone,email}) })
+        .then(r=>r.json()).then(data => {
+            if (data.success) {
+                const sel = document.getElementById(selectId);
+                if (sel && sel.tagName === 'SELECT') {
+                    const opt = new Option(data.name, data.id, true, true);
+                    sel.appendChild(opt);
+                }
+                document.getElementById(formId).classList.remove('open');
+                document.getElementById(iconId).textContent = '+';
+                [nameId, fullNameId, phoneId, emailId].forEach(id => document.getElementById(id).value = '');
+            } else { errEl.textContent = data.error||'Ошибка'; errEl.style.display='block'; }
+        }).catch(()=>{ errEl.textContent='Ошибка сети'; errEl.style.display='block'; })
+        .finally(()=>{ btn.disabled=false; btn.textContent='Добавить инвестора'; });
+    }
+</script>
+{% endblock %}

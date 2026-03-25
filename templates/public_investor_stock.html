@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сток {{ investor.name }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #F7F3EC;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-top: 150px;
+        }
+
+        .logo-icon {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .logo-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .investor-title {
+            background: rgba(255, 255, 255, 0.5);
+            padding: 12px 24px;
+            border-radius: 43px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .readonly-notice {
+            background: rgba(181, 131, 88, 0.12);
+            border: 1px solid rgba(181, 131, 88, 0.3);
+            border-radius: 15px;
+            padding: 12px 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #8b6840;
+            margin-bottom: 20px;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 18px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .history-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: #514D4A;
+            color: white;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            margin-bottom: 25px;
+            transition: background 0.2s;
+        }
+        .history-btn:hover { background: #3d3a38; }
+
+        .section-header {
+            font-size: 18px;
+            font-weight: 500;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .stock-item-card {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .stock-item-image-wrapper {
+            padding: 15px;
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            min-height: 260px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stock-item-image {
+            width: 100%;
+            object-fit: contain;
+            display: block;
+            border-radius: 10px;
+        }
+
+        .stock-item-name {
+            font-size: 17px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .stock-item-field {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 9px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .stock-item-field:last-of-type { border-bottom: none; }
+
+        .stock-item-label {
+            font-size: 14px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .stock-item-value {
+            font-size: 14px;
+            color: #333;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 4px 12px;
+            border-radius: 15px;
+        }
+
+        .stock-item-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: #B58358;
+            background: rgba(181, 131, 88, 0.1);
+            padding: 4px 12px;
+            border-radius: 15px;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(181, 131, 88, 0.15);
+            color: #B58358;
+        }
+
+        .empty-card {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            padding: 40px 20px;
+            text-align: center;
+            color: #999;
+            font-size: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .container { max-width: 600px; padding-top: 90px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="logo-icon">
+    <img src="{{ logo_url }}" alt="Logo">
+</div>
+
+<div class="container">
+    <div class="investor-title">Сток {{ investor.name }}</div>
+
+    <div class="readonly-notice">👁 Страница только для просмотра</div>
+
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="number">{{ stock_positions }}</div>
+            <div class="label">Позиций в стоке</div>
+        </div>
+        {% if total_invested > 0 %}
+        <div class="stat-card">
+            <div class="number">{{ "%.0f"|format(total_invested) }}$</div>
+            <div class="label">Вложено</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <a href="{{ history_url }}" class="history-btn">📋 История продаж</a>
+
+    <h2 class="section-header">Стоковые позиции</h2>
+
+    {% for item in stock_items %}
+    <div class="stock-item-card">
+        <div class="stock-item-image-wrapper">
+            {% if item.photo %}
+                <img src="{{ url_for('uploaded_file', filename=item.photo) }}" alt="{{ item.product_name }}" class="stock-item-image">
+            {% else %}
+                <div style="color: #bbb; font-size: 15px;">Нет фото</div>
+            {% endif %}
+        </div>
+
+        {% if item.category %}
+        <div class="stock-item-field">
+            <span class="stock-item-label">Категория</span>
+            <span class="category-badge">
+                {% if item.category == 'watches' %}Часы
+                {% elif item.category == 'jewelry' %}Ювелирные изделия
+                {% elif item.category == 'bags' %}Сумки
+                {% elif item.category == 'accessories' %}Аксессуары
+                {% else %}{{ item.category }}{% endif %}
+            </span>
+        </div>
+        {% endif %}
+
+        <div class="stock-item-name">{{ item.product_name }}</div>
+
+        {% if item.reference %}
+        <div class="stock-item-field">
+            <span class="stock-item-label">Reference</span>
+            <span class="stock-item-value">{{ item.reference }}</span>
+        </div>
+        {% endif %}
+
+        {% if item.item_year %}
+        <div class="stock-item-field">
+            <span class="stock-item-label">Год изделия</span>
+            <span class="stock-item-value">{{ item.item_year }}</span>
+        </div>
+        {% endif %}
+
+        <div class="stock-item-field">
+            <span class="stock-item-label">Город</span>
+            <span class="stock-item-value">{{ item.city.name }}</span>
+        </div>
+
+        {% if item.quantity and item.quantity > 1 %}
+        <div class="stock-item-field">
+            <span class="stock-item-label">Количество</span>
+            <span class="stock-item-value">{{ item.quantity }} шт.</span>
+        </div>
+        {% endif %}
+
+        {% if item.komplektatsiya %}
+        <div class="stock-item-field">
+            <span class="stock-item-label">Комплектация</span>
+            <span class="stock-item-value">{{ item.komplektatsiya }}</span>
+        </div>
+        {% endif %}
+
+        {% if item.buy_price %}
+        <div class="stock-item-field">
+            <span class="stock-item-label">Закупочная цена</span>
+            <span class="stock-item-value">{{ "%.0f"|format(item.buy_price) }}$</span>
+        </div>
+        {% endif %}
+
+        <div class="stock-item-field">
+            <span class="stock-item-label">Цена реализации</span>
+            <span class="stock-item-price">{{ "%.0f"|format(item.expected_sell_price) }}$</span>
+        </div>
+
+        {% if item.date_added %}
+        <div class="stock-item-field">
+            <span class="stock-item-label">Добавлен</span>
+            <span class="stock-item-value">{{ item.date_added.strftime('%d.%m.%Y') }}</span>
+        </div>
+        {% endif %}
+
+        {% if item.comment %}
+        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.08);">
+            <div class="stock-item-label" style="margin-bottom: 5px;">Комментарий</div>
+            <div style="white-space: pre-wrap; color: #555; font-size: 14px; line-height: 1.5;">{{ item.comment }}</div>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    {% if not stock_items %}
+    <div class="empty-card">Нет товаров в стоке</div>
+    {% endif %}
+
+</div>
+</body>
+</html>

@@ -1,0 +1,954 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .stock-investors-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;  /* Отступ для фиксированного логотипа */
+    }
+    
+    
+    /* Иконка сверху - фиксированная */
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .logo-icon a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+    }
+    
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    /* Фильтр инвесторов */
+    .investor-filter-bar {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 12px 24px;
+        border-radius: 43px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 20px;
+        width: 100%;
+        box-sizing: border-box;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .title-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .add-investor-btn {
+        background: #B58358;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 20px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        display: block;
+        margin-top: 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .add-investor-btn:hover {
+        background: #9a6d47;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+    
+    .manage-investors-btn {
+        background: #8b7355;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 20px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        display: block;
+        transition: all 0.3s ease;
+    }
+    
+    .manage-investors-btn:hover {
+        background: #6d5a42;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+    
+    .collapsible-form {
+        display: none;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .collapsible-form.active {
+        display: block;
+    }
+    
+    .field-input-card {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 0;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .field-label {
+        font-size: 16px;
+        color: #333;
+        display: block;
+        font-weight: 500;
+        padding: 15px 20px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    
+    .field-input-wrapper {
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+    
+    .field-input-card input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-size: 16px;
+        color: #333;
+        outline: none;
+        width: 100%;
+        padding: 0;
+    }
+    
+    .field-input-card input::placeholder {
+        color: #999;
+        opacity: 0.7;
+    }
+    
+    .collapsible-form-btn {
+        width: 100%;
+        background: #B58358;
+        color: white;
+        padding: 12px;
+        border-radius: 15px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .required-mark {
+        color: #B58358;
+    }
+    
+    /* Управление инвесторами - таблица */
+    .investors-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .investors-table thead {
+        display: table-header-group;
+        background: rgba(240, 240, 240, 0.8);
+    }
+    
+    .investors-table tbody tr {
+        display: table-row;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .investors-table tbody tr:last-child {
+        border-bottom: none;
+    }
+    
+    .investors-table th,
+    .investors-table td {
+        padding: 12px;
+        text-align: left;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .investors-table th {
+        font-weight: 600;
+        color: #333;
+        background: rgba(240, 240, 240, 0.8);
+    }
+    
+    .investors-table td {
+        color: #333;
+    }
+    
+    .investor-action-form {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+    
+    .investor-action-form input {
+        padding: 6px;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+        font-size: 14px;
+        background: rgba(255, 255, 255, 0.9);
+        flex: 1;
+        min-width: 150px;
+    }
+    
+    .investor-action-btn {
+        padding: 6px 12px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    
+    .investor-actions-column {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .investor-delete-wrapper {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 8px;
+    }
+    
+    .investor-delete-wrapper .investor-action-form {
+        margin-bottom: 0;
+    }
+    
+    .investor-action-btn-name {
+        background: #B58358;
+        color: white;
+    }
+    
+    .investor-action-btn-username {
+        background: #8b7355;
+        color: white;
+    }
+    
+    .investor-action-btn-password {
+        background: #B58358;
+        color: white;
+    }
+    
+    .investor-action-btn-delete {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .investor-action-btn:hover {
+        opacity: 0.9;
+    }
+    
+    /* Мобильная версия - карточки */
+    .investor-management-card {
+        display: none;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .investor-management-header {
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .investor-management-row {
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .investor-management-label {
+        font-weight: 600;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .investor-management-value {
+        color: #333;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .investor-management-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .investor-management-actions .investor-action-form {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .investor-management-actions .investor-action-form input {
+        width: 100%;
+        padding: 10px;
+        margin-right: 0;
+    }
+    
+    .investor-management-actions .investor-action-btn {
+        width: 100%;
+        padding: 10px;
+    }
+    
+    @media (max-width: 768px) {
+        .investors-table {
+            display: none;
+        }
+        
+        .investor-management-card {
+            display: block;
+        }
+    }
+    
+    @media (min-width: 769px) {
+        .investor-management-card {
+            display: none;
+        }
+        
+        .investors-table {
+            display: table;
+        }
+    }
+    
+    /* Карточка инвестора */
+    .investor-stock-card {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        position: relative;
+        cursor: pointer;
+        transition: background 0.2s, box-shadow 0.2s;
+    }
+    
+    .investor-stock-card:hover {
+        background: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+    
+    .investor-stock-card a {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+    
+    /* Верхняя часть карточки с именем и городами */
+    .investor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+    
+    /* Метка инвестора */
+    .investor-label {
+        display: inline-block;
+        background: #514D4A;
+        color: white;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    /* Тумблер */
+    .toggle-field-si {
+        background: rgba(255,255,255,0.5);
+        border-radius: 20px;
+        padding: 15px 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .toggle-label-si { font-size: 16px; color: #333; font-weight: 500; }
+    .toggle-switch-si { position: relative; width: 52px; height: 28px; flex-shrink: 0; }
+    .toggle-switch-si input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider-si {
+        position: absolute; cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: #ccc; border-radius: 28px; transition: 0.3s;
+    }
+    .toggle-slider-si:before {
+        position: absolute; content: "";
+        height: 20px; width: 20px; left: 4px; bottom: 4px;
+        background: white; border-radius: 50%; transition: 0.3s;
+    }
+    .toggle-switch-si input:checked + .toggle-slider-si { background: #8FD16A; }
+    .toggle-switch-si input:checked + .toggle-slider-si:before { transform: translateX(24px); }
+
+    /* Бейдж комиссионного клиента */
+    .commission-badge {
+        display: inline-block;
+        background: #B58358;
+        color: white;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-left: 8px;
+        vertical-align: middle;
+        letter-spacing: 0.3px;
+    }
+
+    /* Табы фильтрации */
+    .investor-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .investor-tab {
+        flex: 1;
+        min-width: 0;
+        padding: 10px 8px;
+        border-radius: 20px;
+        border: none;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        background: rgba(255,255,255,0.5);
+        color: #333;
+        transition: background 0.2s, color 0.2s;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .investor-tab.active {
+        background: #514D4A;
+        color: white;
+    }
+
+    .investor-tab:hover:not(.active) {
+        background: rgba(255,255,255,0.8);
+    }
+    
+    /* Города справа */
+    .investor-cities {
+        text-align: right;
+    }
+    
+    .cities-label {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 4px;
+    }
+    
+    .cities-value {
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
+    }
+    
+    /* Позиций в стоке */
+    .stock-positions {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .stock-positions-label {
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .stock-positions-number {
+        font-size: 48px;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    /* Финансовые данные в две колонки */
+    .financial-data {
+        display: flex;
+        gap: 15px;
+        margin-top: 15px;
+    }
+    
+    .financial-column {
+        flex: 1;
+        text-align: center;
+    }
+    
+    .financial-label {
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .financial-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    @media (min-width: 768px) {
+        .stock-investors-container {
+            max-width: 600px;
+            padding-top: 90px;
+        }
+        
+        .stock-positions-number {
+            font-size: 56px;
+        }
+        
+        .financial-value {
+            font-size: 28px;
+        }
+    }
+</style>
+
+<!-- Иконка - фиксированная -->
+<div class="logo-icon">
+    <a href="{{ url_for('main') }}">
+        <img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo">
+    </a>
+</div>
+
+<div class="stock-investors-container">
+    <!-- Заголовок -->
+    <div class="title-wrapper">
+        <div class="investor-filter-bar" id="current-tab-label">Все инвесторы</div>
+    </div>
+
+    <!-- Табы фильтрации -->
+    <div class="investor-tabs">
+        <button class="investor-tab active" onclick="filterTab('all', this, 'Все инвесторы')">Все</button>
+        <button class="investor-tab" onclick="filterTab('regular', this, 'Обычные инвесторы')">Инвесторы</button>
+        <button class="investor-tab" onclick="filterTab('commission', this, 'Комиссионные клиенты')">Комиссионные</button>
+    </div>
+
+    <!-- Карточки инвесторов -->
+    {% for investor_name, data in investors_data.items() %}
+    <div class="investor-stock-card" data-type="{{ 'commission' if data.is_commission_client else 'regular' }}">
+        <a href="{{ url_for('stock_investor_detail', investor_name=investor_name) }}" style="text-decoration: none; color: inherit;">
+            <div class="investor-header">
+                <div>
+                    <div class="investor-label">{{ investor_name }}</div>
+                    {% if data.is_commission_client %}
+                    <span class="commission-badge">Комиссионный клиент</span>
+                    {% endif %}
+                </div>
+                <div class="investor-cities">
+                    <div class="cities-label">Города</div>
+                    <div class="cities-value">{{ data.cities }}</div>
+                </div>
+            </div>
+            
+            <div class="stock-positions">
+                <div class="stock-positions-label">Позиций в стоке</div>
+                <div class="stock-positions-number">{{ data.positions }}</div>
+            </div>
+            
+            {% if is_admin %}
+            <div class="financial-data">
+                <div class="financial-column">
+                    <div class="financial-label">Реализуется $</div>
+                    <div class="financial-value">{{ "%.0f"|format(data.invested) }}$</div>
+                </div>
+                <div class="financial-column">
+                    <div class="financial-label">Ожидаемая прибыль</div>
+                    <div class="financial-value">{{ "%.0f"|format(data.expected_profit) }}$</div>
+                </div>
+            </div>
+            {% endif %}
+        </a>
+    </div>
+    {% endfor %}
+    
+    <div id="empty-tab-msg" style="display:none;" class="investor-stock-card" style="text-align: center; padding: 40px 20px;">
+        <p style="color: #666; font-size: 16px; text-align:center;">Нет данных</p>
+    </div>
+
+    {% if not investors_data %}
+    <div class="investor-stock-card" style="text-align: center; padding: 40px 20px;">
+        <p style="color: #666; font-size: 16px;">Нет данных о стоке по инвесторам</p>
+    </div>
+    {% endif %}
+    
+    {% if is_admin %}
+    <!-- === КНОПКИ ДЛЯ ОБЫЧНЫХ ИНВЕСТОРОВ (показываются на вкладках "Все" и "Инвесторы") === -->
+    <div id="admin-btns-regular" style="margin-top: 30px; display: flex; flex-direction: column; align-items: center; gap: 15px;">
+        <button type="button" class="add-investor-btn" onclick="toggleForm('investor-form')">Добавить инвестора</button>
+        <button type="button" class="manage-investors-btn" onclick="toggleForm('investors-management')">Управление инвесторами</button>
+    </div>
+
+    <!-- Форма добавления инвестора -->
+    <div id="investor-form" class="collapsible-form">
+        <form method="POST" action="{{ url_for('add_investor') }}" id="addInvestorForm">
+            <div class="field-input-card">
+                <label class="field-label">Псевдоним / Имя <span class="required-mark">*</span></label>
+                <div class="field-input-wrapper">
+                    <input type="text" name="name" required placeholder="Короткое имя для идентификации">
+                </div>
+            </div>
+            <div class="field-input-card">
+                <label class="field-label">ФИО</label>
+                <div class="field-input-wrapper">
+                    <input type="text" name="full_name" placeholder="Полное имя инвестора">
+                </div>
+            </div>
+            <div class="field-input-card">
+                <label class="field-label">Телефон</label>
+                <div class="field-input-wrapper">
+                    <input type="text" name="phone" placeholder="+7...">
+                </div>
+            </div>
+            <div class="field-input-card">
+                <label class="field-label">Почта</label>
+                <div class="field-input-wrapper">
+                    <input type="email" name="email" placeholder="example@mail.com">
+                </div>
+            </div>
+            <button type="submit" class="collapsible-form-btn">Добавить инвестора</button>
+        </form>
+    </div>
+
+    <!-- Список обычных инвесторов -->
+    <div id="investors-management" class="collapsible-form" style="margin-top: 20px;">
+        <h2 style="color: #333; font-size: 18px; font-weight: 500; margin-bottom: 20px; text-align: center;">Список инвесторов</h2>
+        {% if regular_investors %}
+            <table class="investors-table">
+                <thead>
+                    <tr>
+                        <th>Псевдоним</th><th>ФИО</th><th>Телефон</th><th>Почта</th><th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for investor in regular_investors %}
+                    <tr>
+                        <td>{{ investor.name }}</td>
+                        <td>{{ investor.full_name or '—' }}</td>
+                        <td>{{ investor.phone or '—' }}</td>
+                        <td>{{ investor.email or '—' }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('manage_sellers') }}" class="investor-action-form" onsubmit="return confirm('Удалить инвестора {{ investor.name }}?');">
+                                <input type="hidden" name="action" value="delete_investor_record">
+                                <input type="hidden" name="investor_id_del" value="{{ investor.id }}">
+                                <button type="submit" class="investor-action-btn investor-action-btn-delete">Удалить</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% for investor in regular_investors %}
+            <div class="investor-management-card">
+                <div class="investor-management-header">
+                    <div class="investor-management-row">
+                        <div class="investor-management-label">Псевдоним:</div>
+                        <div class="investor-management-value">{{ investor.name }}</div>
+                    </div>
+                    {% if investor.full_name %}
+                    <div class="investor-management-row">
+                        <div class="investor-management-label">ФИО:</div>
+                        <div class="investor-management-value">{{ investor.full_name }}</div>
+                    </div>
+                    {% endif %}
+                    {% if investor.phone %}
+                    <div class="investor-management-row">
+                        <div class="investor-management-label">Телефон:</div>
+                        <div class="investor-management-value">{{ investor.phone }}</div>
+                    </div>
+                    {% endif %}
+                    {% if investor.email %}
+                    <div class="investor-management-row">
+                        <div class="investor-management-label">Почта:</div>
+                        <div class="investor-management-value">{{ investor.email }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="investor-management-actions">
+                    <form method="POST" action="{{ url_for('manage_sellers') }}" class="investor-action-form" onsubmit="return confirm('Удалить инвестора {{ investor.name }}?');">
+                        <input type="hidden" name="action" value="delete_investor_record">
+                        <input type="hidden" name="investor_id_del" value="{{ investor.id }}">
+                        <button type="submit" class="investor-action-btn investor-action-btn-delete">Удалить</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color: #666; text-align: center; padding: 20px;">Инвесторы не добавлены</p>
+        {% endif %}
+    </div>
+
+    <!-- === КНОПКИ ДЛЯ КОМИССИОННЫХ КЛИЕНТОВ (показываются только на вкладке "Комиссионные") === -->
+    <div id="admin-btns-commission" style="display: none; margin-top: 30px; flex-direction: column; align-items: center; gap: 15px;">
+        <button type="button" class="add-investor-btn" onclick="toggleCommissionForm('commission-client-form')">Добавить комиссионного клиента</button>
+        <button type="button" class="manage-investors-btn" onclick="toggleCommissionForm('commission-management')">Управление комиссионными клиентами</button>
+    </div>
+
+    <!-- Форма добавления комиссионного клиента (AJAX) -->
+    <div id="commission-client-form" class="collapsible-form" style="margin-top: 10px;">
+        <div class="iaf-error" id="cc-si-error" style="display:none; color:#c00; font-size:14px; padding:8px 0; margin-bottom:10px;"></div>
+        <div class="field-input-card">
+            <label class="field-label">Псевдоним / Имя <span class="required-mark">*</span></label>
+            <div class="field-input-wrapper">
+                <input type="text" id="cc-si-name" placeholder="Короткое имя для идентификации">
+            </div>
+        </div>
+        <div class="field-input-card">
+            <label class="field-label">ФИО</label>
+            <div class="field-input-wrapper">
+                <input type="text" id="cc-si-full-name" placeholder="Полное имя">
+            </div>
+        </div>
+        <div class="field-input-card">
+            <label class="field-label">Телефон</label>
+            <div class="field-input-wrapper">
+                <input type="text" id="cc-si-phone" placeholder="+7...">
+            </div>
+        </div>
+        <div class="field-input-card">
+            <label class="field-label">Почта</label>
+            <div class="field-input-wrapper">
+                <input type="email" id="cc-si-email" placeholder="example@mail.com">
+            </div>
+        </div>
+        <div class="toggle-field-si">
+            <span class="toggle-label-si">Комиссионный клиент</span>
+            <label class="toggle-switch-si">
+                <input type="checkbox" id="cc-si-is-commission" checked disabled>
+                <span class="toggle-slider-si"></span>
+            </label>
+        </div>
+        <button type="button" class="collapsible-form-btn" id="cc-si-submit-btn" onclick="submitCommissionClientSI()">Добавить комиссионного клиента</button>
+    </div>
+
+    <!-- Список комиссионных клиентов -->
+    <div id="commission-management" class="collapsible-form" style="margin-top: 20px;">
+        <h2 style="color: #333; font-size: 18px; font-weight: 500; margin-bottom: 20px; text-align: center;">Список комиссионных клиентов</h2>
+        {% if commission_investors %}
+            <table class="investors-table">
+                <thead>
+                    <tr>
+                        <th>Псевдоним</th><th>ФИО</th><th>Телефон</th><th>Почта</th><th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for investor in commission_investors %}
+                    <tr>
+                        <td>{{ investor.name }}</td>
+                        <td>{{ investor.full_name or '—' }}</td>
+                        <td>{{ investor.phone or '—' }}</td>
+                        <td>{{ investor.email or '—' }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('manage_sellers') }}" class="investor-action-form" onsubmit="return confirm('Удалить комиссионного клиента {{ investor.name }}?');">
+                                <input type="hidden" name="action" value="delete_investor_record">
+                                <input type="hidden" name="investor_id_del" value="{{ investor.id }}">
+                                <button type="submit" class="investor-action-btn investor-action-btn-delete">Удалить</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% for investor in commission_investors %}
+            <div class="investor-management-card">
+                <div class="investor-management-header">
+                    <div class="investor-management-row">
+                        <div class="investor-management-label">Псевдоним:</div>
+                        <div class="investor-management-value">{{ investor.name }}</div>
+                    </div>
+                    {% if investor.full_name %}
+                    <div class="investor-management-row">
+                        <div class="investor-management-label">ФИО:</div>
+                        <div class="investor-management-value">{{ investor.full_name }}</div>
+                    </div>
+                    {% endif %}
+                    {% if investor.phone %}
+                    <div class="investor-management-row">
+                        <div class="investor-management-label">Телефон:</div>
+                        <div class="investor-management-value">{{ investor.phone }}</div>
+                    </div>
+                    {% endif %}
+                    {% if investor.email %}
+                    <div class="investor-management-row">
+                        <div class="investor-management-label">Почта:</div>
+                        <div class="investor-management-value">{{ investor.email }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="investor-management-actions">
+                    <form method="POST" action="{{ url_for('manage_sellers') }}" class="investor-action-form" onsubmit="return confirm('Удалить комиссионного клиента {{ investor.name }}?');">
+                        <input type="hidden" name="action" value="delete_investor_record">
+                        <input type="hidden" name="investor_id_del" value="{{ investor.id }}">
+                        <button type="submit" class="investor-action-btn investor-action-btn-delete">Удалить</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color: #666; text-align: center; padding: 20px;">Комиссионные клиенты не добавлены</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Переключение форм обычных инвесторов
+    function toggleForm(formId) {
+        const form = document.getElementById(formId);
+        const btns = document.querySelectorAll('#admin-btns-regular button');
+        form.classList.toggle('active');
+        if (formId === 'investor-form') {
+            btns[0].textContent = form.classList.contains('active') ? 'Скрыть форму' : 'Добавить инвестора';
+        } else if (formId === 'investors-management') {
+            btns[1].textContent = form.classList.contains('active') ? 'Скрыть управление' : 'Управление инвесторами';
+        }
+    }
+
+    // Переключение форм комиссионных клиентов
+    function toggleCommissionForm(formId) {
+        const form = document.getElementById(formId);
+        const btns = document.querySelectorAll('#admin-btns-commission button');
+        form.classList.toggle('active');
+        if (formId === 'commission-client-form') {
+            btns[0].textContent = form.classList.contains('active') ? 'Скрыть форму' : 'Добавить комиссионного клиента';
+        } else if (formId === 'commission-management') {
+            btns[1].textContent = form.classList.contains('active') ? 'Скрыть управление' : 'Управление комиссионными клиентами';
+        }
+    }
+
+    // Добавить комиссионного клиента через AJAX
+    function submitCommissionClientSI() {
+        const btn = document.getElementById('cc-si-submit-btn');
+        const errEl = document.getElementById('cc-si-error');
+        errEl.style.display = 'none';
+
+        const name      = (document.getElementById('cc-si-name').value || '').trim();
+        const full_name = (document.getElementById('cc-si-full-name').value || '').trim();
+        const phone     = (document.getElementById('cc-si-phone').value || '').trim();
+        const email     = (document.getElementById('cc-si-email').value || '').trim();
+        const is_commission_client = document.getElementById('cc-si-is-commission').checked;
+
+        if (!name) {
+            errEl.textContent = 'Введите псевдоним'; errEl.style.display = 'block'; return;
+        }
+
+        btn.disabled = true; btn.textContent = 'Сохранение...';
+
+        fetch('/api/add_investor', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name, full_name, phone, email, is_commission_client})
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                errEl.textContent = data.error || 'Ошибка'; errEl.style.display = 'block';
+                btn.disabled = false; btn.textContent = 'Добавить комиссионного клиента';
+            }
+        }).catch(() => {
+            errEl.textContent = 'Ошибка сети'; errEl.style.display = 'block';
+            btn.disabled = false; btn.textContent = 'Добавить комиссионного клиента';
+        });
+    }
+
+    // Фильтрация карточек по типу + переключение блоков кнопок
+    function filterTab(type, btn, label) {
+        document.querySelectorAll('.investor-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        const labelEl = document.getElementById('current-tab-label');
+        if (labelEl) labelEl.textContent = label;
+
+        // Карточки
+        const cards = document.querySelectorAll('.investor-stock-card[data-type]');
+        let visible = 0;
+        cards.forEach(card => {
+            const show = type === 'all' || card.dataset.type === type;
+            card.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        const emptyMsg = document.getElementById('empty-tab-msg');
+        if (emptyMsg) emptyMsg.style.display = visible === 0 ? 'block' : 'none';
+
+        // Кнопки управления: показываем нужный блок
+        const btnRegular    = document.getElementById('admin-btns-regular');
+        const btnCommission = document.getElementById('admin-btns-commission');
+        if (btnRegular && btnCommission) {
+            if (type === 'commission') {
+                btnRegular.style.display    = 'none';
+                btnCommission.style.display = 'flex';
+                // Скрываем открытые формы регулярных
+                document.getElementById('investor-form').classList.remove('active');
+                document.getElementById('investors-management').classList.remove('active');
+                const rbtns = document.querySelectorAll('#admin-btns-regular button');
+                if (rbtns[0]) rbtns[0].textContent = 'Добавить инвестора';
+                if (rbtns[1]) rbtns[1].textContent = 'Управление инвесторами';
+            } else {
+                btnRegular.style.display    = 'flex';
+                btnCommission.style.display = 'none';
+                // Скрываем открытые формы комиссионных
+                document.getElementById('commission-client-form').classList.remove('active');
+                document.getElementById('commission-management').classList.remove('active');
+                const cbtns = document.querySelectorAll('#admin-btns-commission button');
+                if (cbtns[0]) cbtns[0].textContent = 'Добавить комиссионного клиента';
+                if (cbtns[1]) cbtns[1].textContent = 'Управление комиссионными клиентами';
+            }
+        }
+    }
+</script>
+{% endblock %}

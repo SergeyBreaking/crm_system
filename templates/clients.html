@@ -1,0 +1,595 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .clients-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;
+    }
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    .logo-icon a { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; text-decoration: none; }
+    .logo-icon img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; cursor: pointer; }
+    
+    .page-title {
+        text-align: center;
+        font-size: 18px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 20px;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 12px 24px;
+        border-radius: 43px;
+        display: inline-block;
+        width: auto;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .title-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .add-client-btn {
+        background: #B58358;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 20px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        display: block;
+        margin-top: 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .add-client-btn:hover {
+        background: #9a6d47;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+    
+    .form-toggle {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 12px 20px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 16px;
+        color: #333;
+        transition: all 0.3s ease;
+    }
+    
+    .form-toggle:hover {
+        background: rgba(255, 255, 255, 0.7);
+    }
+    
+    .form-toggle::after {
+        content: '▼';
+        transition: transform 0.3s ease;
+    }
+    
+    .form-toggle.active::after {
+        transform: rotate(180deg);
+    }
+    
+    .collapsible-form {
+        display: none;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .collapsible-form.active {
+        display: block;
+    }
+    
+    .field-input-card {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 0;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .field-label {
+        font-size: 16px;
+        color: #333;
+        display: block;
+        font-weight: 500;
+        padding: 15px 20px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    
+    .field-input-wrapper {
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+    
+    .field-input-card input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-size: 16px;
+        color: #333;
+        outline: none;
+        width: 100%;
+        padding: 0;
+    }
+    
+    .field-input-card input::placeholder {
+        color: #999;
+        opacity: 0.7;
+    }
+    
+    .field-input-card input[type="date"] {
+        cursor: pointer;
+    }
+    
+    .collapsible-form-btn {
+        width: 100%;
+        background: #B58358;
+        color: white;
+        padding: 12px;
+        border-radius: 15px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .required-mark {
+        color: #B58358;
+    }
+    
+    .client-card {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .client-card h3 {
+        margin: 0 0 12px 0;
+        font-size: 18px;
+        color: #333;
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        padding-bottom: 10px;
+    }
+    .client-detail {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        font-size: 14px;
+    }
+    .client-detail .label {
+        color: #666;
+        margin-right: 15px;
+    }
+    .client-detail .value {
+        color: #333;
+        text-align: right;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #999;
+        font-size: 16px;
+    }
+
+    /* Табы */
+    .clients-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 25px;
+    }
+    .clients-tab {
+        flex: 1;
+        padding: 12px 10px;
+        border-radius: 20px;
+        border: none;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        background: rgba(255,255,255,0.5);
+        color: #333;
+        transition: background 0.2s, color 0.2s;
+        text-align: center;
+    }
+    .clients-tab.active {
+        background: #514D4A;
+        color: white;
+    }
+    .clients-tab:hover:not(.active) {
+        background: rgba(255,255,255,0.8);
+    }
+
+    /* Тумблер */
+    .toggle-field {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 15px 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .toggle-label {
+        font-size: 16px;
+        color: #333;
+        font-weight: 500;
+    }
+    .toggle-switch {
+        position: relative;
+        width: 52px;
+        height: 28px;
+        flex-shrink: 0;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: #ccc;
+        border-radius: 28px;
+        transition: 0.3s;
+    }
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 20px; width: 20px;
+        left: 4px; bottom: 4px;
+        background: white;
+        border-radius: 50%;
+        transition: 0.3s;
+    }
+    .toggle-switch input:checked + .toggle-slider { background: #8FD16A; }
+    .toggle-switch input:checked + .toggle-slider:before { transform: translateX(24px); }
+
+    /* Бейдж комиссионного клиента */
+    .commission-badge {
+        display: inline-block;
+        background: #B58358;
+        color: white;
+        padding: 2px 9px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-left: 8px;
+        vertical-align: middle;
+    }
+
+    @media (min-width: 768px) {
+        .clients-container { max-width: 700px; padding-top: 90px; }
+    }
+</style>
+
+<div class="logo-icon">
+    <a href="{{ url_for('main') }}"><img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo"></a>
+</div>
+
+<div class="clients-container">
+    <div class="title-wrapper">
+        <h1 class="page-title" id="page-title-label">Клиенты</h1>
+        <button type="button" class="add-client-btn" id="add-btn" onclick="toggleForm('client-form')">Добавить клиента</button>
+    </div>
+
+    <!-- Табы -->
+    <div class="clients-tabs">
+        <button class="clients-tab active" onclick="switchTab('regular', this)">Клиенты</button>
+        <button class="clients-tab" onclick="switchTab('commission', this)">Комиссионные клиенты</button>
+    </div>
+
+    <!-- ===== СЕКЦИЯ: Обычные клиенты ===== -->
+    <div id="section-regular">
+        <!-- Форма добавления клиента -->
+        <div id="client-form" class="collapsible-form">
+            <form method="POST" action="{{ url_for('add_client') }}" id="addClientForm">
+                <div class="field-input-card">
+                    <label class="field-label">ФИО <span class="required-mark">*</span></label>
+                    <div class="field-input-wrapper">
+                        <input type="text" name="full_name" required placeholder="Иванов Иван Иванович">
+                    </div>
+                </div>
+                <div class="field-input-card">
+                    <label class="field-label">Телефон</label>
+                    <div class="field-input-wrapper">
+                        <input type="text" name="phone" placeholder="+7 999 123-45-67">
+                    </div>
+                </div>
+                <div class="field-input-card">
+                    <label class="field-label">Instagram</label>
+                    <div class="field-input-wrapper">
+                        <input type="text" name="instagram" placeholder="@username">
+                    </div>
+                </div>
+                <div class="field-input-card">
+                    <label class="field-label">Telegram</label>
+                    <div class="field-input-wrapper">
+                        <input type="text" name="telegram" placeholder="@username или +7...">
+                    </div>
+                </div>
+                <div class="field-input-card">
+                    <label class="field-label">Почта</label>
+                    <div class="field-input-wrapper">
+                        <input type="email" name="email" placeholder="email@example.com">
+                    </div>
+                </div>
+                <div class="field-input-card">
+                    <label class="field-label">Дата рождения</label>
+                    <div class="field-input-wrapper">
+                        <input type="date" name="birth_date" placeholder="ДД.ММ.ГГГГ">
+                    </div>
+                </div>
+                <p style="font-size:13px; color:#666; margin:0 0 10px 0; padding: 0 20px;">ФИО и хотя бы один контакт (телефон, инст, тг или почта) обязательны.</p>
+                <button type="submit" class="collapsible-form-btn">Добавить клиента</button>
+            </form>
+        </div>
+
+        {% if clients %}
+            {% for c in clients %}
+            <div class="client-card">
+                <h3>
+                    <a href="{{ url_for('sales', client=c.id) }}" style="text-decoration: none; color: #333; display: flex; justify-content: space-between; align-items: center;">
+                        <span>{{ c.full_name }}</span>
+                        <span style="font-size: 14px; color: #B58358; font-weight: normal;">История покупок →</span>
+                    </a>
+                </h3>
+                {% if c.phone %}
+                <div class="client-detail">
+                    <span class="label">Телефон</span>
+                    <span class="value">{{ c.phone }}</span>
+                </div>
+                {% endif %}
+                {% if c.instagram %}
+                <div class="client-detail">
+                    <span class="label">Instagram</span>
+                    <span class="value">{{ c.instagram }}</span>
+                </div>
+                {% endif %}
+                {% if c.telegram %}
+                <div class="client-detail">
+                    <span class="label">Telegram</span>
+                    <span class="value">{{ c.telegram }}</span>
+                </div>
+                {% endif %}
+                {% if c.email %}
+                <div class="client-detail">
+                    <span class="label">Почта</span>
+                    <span class="value">{{ c.email }}</span>
+                </div>
+                {% endif %}
+                {% if c.birth_date %}
+                <div class="client-detail">
+                    <span class="label">Дата рождения</span>
+                    <span class="value">{{ c.birth_date.strftime('%d.%m.%Y') }}</span>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">Пока нет клиентов. Добавляйте клиентов при создании продаж.</div>
+        {% endif %}
+    </div>
+
+    <!-- ===== СЕКЦИЯ: Комиссионные клиенты ===== -->
+    <div id="section-commission" style="display:none;">
+
+        <!-- Форма добавления комиссионного клиента -->
+        <div id="commission-client-form" class="collapsible-form">
+            <div id="cc-form-error" style="display:none; color:#c00; font-size:13px; margin-bottom:10px; padding:0 4px;"></div>
+            <div class="field-input-card">
+                <label class="field-label">Псевдоним / Имя <span class="required-mark">*</span></label>
+                <div class="field-input-wrapper">
+                    <input type="text" id="cc-name" placeholder="Короткое имя">
+                </div>
+            </div>
+            <div class="field-input-card">
+                <label class="field-label">ФИО</label>
+                <div class="field-input-wrapper">
+                    <input type="text" id="cc-full-name" placeholder="Полное имя">
+                </div>
+            </div>
+            <div class="field-input-card">
+                <label class="field-label">Телефон</label>
+                <div class="field-input-wrapper">
+                    <input type="text" id="cc-phone" placeholder="+7 999 123-45-67">
+                </div>
+            </div>
+            <div class="field-input-card">
+                <label class="field-label">Почта</label>
+                <div class="field-input-wrapper">
+                    <input type="email" id="cc-email" placeholder="email@example.com">
+                </div>
+            </div>
+            <!-- Тумблер: Комиссионный клиент -->
+            <div class="toggle-field">
+                <span class="toggle-label">Комиссионный клиент</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="cc-is-commission" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <button type="button" class="collapsible-form-btn" id="cc-submit-btn" onclick="submitCommissionClient()">Добавить комиссионного клиента</button>
+        </div>
+
+        <div id="commission-clients-list">
+        {% if commission_clients %}
+            {% for cc in commission_clients %}
+            <div class="client-card">
+                <h3 style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>
+                        {{ cc.name }}
+                        {% if cc.full_name %}<span style="font-weight:400; font-size:15px; color:#555;"> — {{ cc.full_name }}</span>{% endif %}
+                    </span>
+                    <span class="commission-badge">Комиссионный</span>
+                </h3>
+                {% if cc.phone %}
+                <div class="client-detail">
+                    <span class="label">Телефон</span>
+                    <span class="value">{{ cc.phone }}</span>
+                </div>
+                {% endif %}
+                {% if cc.email %}
+                <div class="client-detail">
+                    <span class="label">Почта</span>
+                    <span class="value">{{ cc.email }}</span>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state" id="cc-empty-state">Нет комиссионных клиентов.</div>
+        {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleForm(formId) {
+        const form = document.getElementById(formId);
+        const btn = document.getElementById('add-btn');
+        form.classList.toggle('active');
+        btn.textContent = form.classList.contains('active') ? 'Скрыть форму' : 'Добавить клиента';
+    }
+
+    function switchTab(type, tabBtn) {
+        document.querySelectorAll('.clients-tab').forEach(t => t.classList.remove('active'));
+        tabBtn.classList.add('active');
+
+        const isCommission = type === 'commission';
+        document.getElementById('section-regular').style.display    = isCommission ? 'none'  : 'block';
+        document.getElementById('section-commission').style.display = isCommission ? 'block' : 'none';
+
+        const titleEl = document.getElementById('page-title-label');
+        const addBtn  = document.getElementById('add-btn');
+
+        if (isCommission) {
+            titleEl.textContent  = 'Комиссионные клиенты';
+            addBtn.textContent   = 'Добавить комиссионного клиента';
+            addBtn.onclick       = () => toggleCommissionForm();
+        } else {
+            titleEl.textContent  = 'Клиенты';
+            addBtn.textContent   = 'Добавить клиента';
+            addBtn.onclick       = () => toggleForm('client-form');
+            // Закрываем форму комиссионного если была открыта
+            document.getElementById('commission-client-form').classList.remove('active');
+        }
+    }
+
+    function toggleCommissionForm() {
+        const form = document.getElementById('commission-client-form');
+        const btn  = document.getElementById('add-btn');
+        form.classList.toggle('active');
+        btn.textContent = form.classList.contains('active')
+            ? 'Скрыть форму'
+            : 'Добавить комиссионного клиента';
+    }
+
+    function submitCommissionClient() {
+        const btn    = document.getElementById('cc-submit-btn');
+        const errEl  = document.getElementById('cc-form-error');
+        errEl.style.display = 'none';
+
+        const name              = document.getElementById('cc-name').value.trim();
+        const full_name         = document.getElementById('cc-full-name').value.trim();
+        const phone             = document.getElementById('cc-phone').value.trim();
+        const email             = document.getElementById('cc-email').value.trim();
+        const is_commission_client = document.getElementById('cc-is-commission').checked;
+
+        if (!name) {
+            errEl.textContent = 'Введите псевдоним / имя';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Сохранение...';
+
+        fetch('/api/add_investor', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name, full_name, phone, email, is_commission_client})
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                // Скрываем «пустое» сообщение если было
+                const emptyEl = document.getElementById('cc-empty-state');
+                if (emptyEl) emptyEl.style.display = 'none';
+
+                // Вставляем новую карточку в начало списка
+                const list = document.getElementById('commission-clients-list');
+                const card = document.createElement('div');
+                card.className = 'client-card';
+                card.innerHTML = `
+                    <h3 style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>${escapeHtml(data.name)}${data.full_name ? ' <span style="font-weight:400;font-size:15px;color:#555;">— ' + escapeHtml(data.full_name) + '</span>' : ''}</span>
+                        <span class="commission-badge">Комиссионный</span>
+                    </h3>
+                    ${data.phone ? `<div class="client-detail"><span class="label">Телефон</span><span class="value">${escapeHtml(data.phone)}</span></div>` : ''}
+                    ${data.email ? `<div class="client-detail"><span class="label">Почта</span><span class="value">${escapeHtml(data.email)}</span></div>` : ''}
+                `;
+                list.insertBefore(card, list.firstChild);
+
+                // Очищаем форму
+                document.getElementById('cc-name').value      = '';
+                document.getElementById('cc-full-name').value = '';
+                document.getElementById('cc-phone').value     = '';
+                document.getElementById('cc-email').value     = '';
+                document.getElementById('cc-is-commission').checked = true;
+
+                // Закрываем форму
+                document.getElementById('commission-client-form').classList.remove('active');
+                document.getElementById('add-btn').textContent = 'Добавить комиссионного клиента';
+            } else {
+                errEl.textContent   = data.error || 'Ошибка';
+                errEl.style.display = 'block';
+            }
+        })
+        .catch(() => {
+            errEl.textContent   = 'Ошибка сети';
+            errEl.style.display = 'block';
+        })
+        .finally(() => {
+            btn.disabled    = false;
+            btn.textContent = 'Добавить комиссионного клиента';
+        });
+    }
+
+    function escapeHtml(s) {
+        const d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+</script>
+{% endblock %}

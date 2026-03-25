@@ -1,0 +1,519 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .sellers-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .sellers-table thead {
+        display: table-header-group;
+    }
+    
+    .sellers-table tbody tr {
+        display: table-row;
+    }
+    
+    .sellers-table th,
+    .sellers-table td {
+        padding: 12px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+    
+    .sellers-table thead tr {
+        background: #f0f0f0;
+    }
+    
+    .seller-card {
+        display: none;
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .seller-card-header {
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .seller-card-row {
+        margin-bottom: 10px;
+    }
+    
+    .seller-card-label {
+        font-weight: 600;
+        color: #8b7355;
+        margin-bottom: 5px;
+    }
+    
+    .seller-card-value {
+        color: #333;
+    }
+    
+    .seller-actions {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #ddd;
+    }
+    
+    .seller-action-form {
+        margin-bottom: 10px;
+    }
+    
+    .seller-action-form input[type="password"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-bottom: 8px;
+    }
+    
+    .seller-action-form button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+    
+    .btn-change-password {
+        background: #8b7355;
+        color: white;
+    }
+    
+    .btn-delete {
+        background: #dc3545;
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .sellers-table {
+            display: none;
+        }
+        
+        .seller-card {
+            display: block;
+        }
+        
+        .seller-action-form {
+            display: block;
+        }
+        
+        .seller-action-form input[type="password"],
+        .seller-action-form button {
+            width: 100%;
+            margin-right: 0;
+            margin-bottom: 8px;
+        }
+    }
+    
+    @media (min-width: 769px) {
+        .seller-card {
+            display: none;
+        }
+        
+        .sellers-table {
+            display: table;
+        }
+        
+        .seller-action-form {
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        .seller-action-form input[type="password"] {
+            width: auto;
+            margin-right: 5px;
+        }
+        
+        .seller-action-form button {
+            width: auto;
+        }
+    }
+</style>
+
+<div style="max-width: 1200px; margin: 40px auto; padding: 20px;">
+    <h1 style="color: #8b7355; margin-bottom: 30px; margin-top: 60px; padding-left: 20px;">Управление продавцами и инвесторами</h1>
+    
+    {% if not is_top_manager %}
+    <!-- Добавить топ-менеджера -->
+    <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; border-left: 4px solid #B58358;">
+        <h2 style="color: #8b7355; margin-bottom: 8px;">Добавить топ-менеджера</h2>
+        <p style="color: #888; font-size: 14px; margin-bottom: 20px;">Доступ как у администратора, но без возможности взаимодействовать с заявками на продажу.</p>
+        <form method="POST" action="{{ url_for('manage_sellers') }}" style="display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 500px;">
+            <input type="hidden" name="action" value="add_top_manager">
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Имя <span style="color:#c00">*</span>:</label>
+                <input type="text" name="name" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Логин <span style="color:#c00">*</span>:</label>
+                <input type="text" name="username" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Пароль <span style="color:#c00">*</span>:</label>
+                <input type="password" name="password" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+            <div>
+                <button type="submit" style="padding: 10px 20px; background: #B58358; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; width: auto;">Добавить топ-менеджера</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Список топ-менеджеров -->
+    <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; border-left: 4px solid #B58358;">
+        <h2 style="color: #8b7355; margin-bottom: 20px;">Список топ-менеджеров</h2>
+        {% if top_managers %}
+            <!-- Таблица для десктопа -->
+            <table class="sellers-table">
+                <thead>
+                    <tr>
+                        <th>Имя</th>
+                        <th>Логин</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tm in top_managers %}
+                    <tr>
+                        <td>{{ tm.name }}</td>
+                        <td>{{ tm.username }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('manage_sellers') }}" class="seller-action-form">
+                                <input type="hidden" name="action" value="change_top_manager_password">
+                                <input type="hidden" name="top_manager_id" value="{{ tm.id }}">
+                                <input type="password" name="new_password" placeholder="Новый пароль" required style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; margin-right: 5px;">
+                                <button type="submit" style="padding: 6px 12px; background: #8b7355; color: white; border: none; border-radius: 4px; cursor: pointer;">Изменить пароль</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('manage_sellers') }}" class="seller-action-form" onsubmit="return confirm('Вы уверены, что хотите удалить топ-менеджера {{ tm.name }}?');">
+                                <input type="hidden" name="action" value="delete_top_manager">
+                                <input type="hidden" name="top_manager_id" value="{{ tm.id }}">
+                                <button type="submit" style="padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Удалить</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <!-- Карточки для мобильных -->
+            {% for tm in top_managers %}
+            <div class="seller-card">
+                <div class="seller-card-header">
+                    <div class="seller-card-row">
+                        <div class="seller-card-label">Имя:</div>
+                        <div class="seller-card-value">{{ tm.name }}</div>
+                    </div>
+                    <div class="seller-card-row">
+                        <div class="seller-card-label">Логин:</div>
+                        <div class="seller-card-value">{{ tm.username }}</div>
+                    </div>
+                </div>
+                <div class="seller-actions">
+                    <form method="POST" action="{{ url_for('manage_sellers') }}" class="seller-action-form">
+                        <input type="hidden" name="action" value="change_top_manager_password">
+                        <input type="hidden" name="top_manager_id" value="{{ tm.id }}">
+                        <input type="password" name="new_password" placeholder="Новый пароль" required>
+                        <button type="submit" class="btn-change-password">Изменить пароль</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('manage_sellers') }}" class="seller-action-form" onsubmit="return confirm('Вы уверены, что хотите удалить топ-менеджера {{ tm.name }}?');">
+                        <input type="hidden" name="action" value="delete_top_manager">
+                        <input type="hidden" name="top_manager_id" value="{{ tm.id }}">
+                        <button type="submit" class="btn-delete">Удалить</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color: #666; text-align: center; padding: 20px;">Топ-менеджеры не добавлены</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Сервис (ремонт) -->
+    <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; border-left: 4px solid #6c757d;">
+        <h2 style="color: #8b7355; margin-bottom: 8px;">Сервис (ремонт)</h2>
+        <p style="color: #888; font-size: 14px; margin-bottom: 20px;">Доступ только к разделу ремонта: список заявок и создание новых.</p>
+        <form method="POST" action="{{ url_for('manage_sellers') }}" style="display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 500px;">
+            <input type="hidden" name="action" value="add_service">
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Имя <span style="color:#c00">*</span>:</label>
+                <input type="text" name="name" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Логин <span style="color:#c00">*</span>:</label>
+                <input type="text" name="username" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Пароль <span style="color:#c00">*</span>:</label>
+                <input type="password" name="password" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+            <div>
+                <button type="submit" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; width: auto;">Добавить пользователя сервиса</button>
+            </div>
+        </form>
+        <h3 style="color: #666; margin-top: 25px; margin-bottom: 15px;">Список пользователей сервиса</h3>
+        {% if service_users %}
+            <table class="sellers-table">
+                <thead>
+                    <tr>
+                        <th>Имя</th>
+                        <th>Логин</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for su in service_users %}
+                    <tr>
+                        <td>{{ su.name }}</td>
+                        <td>{{ su.username }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('manage_sellers') }}" class="seller-action-form">
+                                <input type="hidden" name="action" value="change_service_password">
+                                <input type="hidden" name="service_id" value="{{ su.id }}">
+                                <input type="password" name="new_password" placeholder="Новый пароль" required style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; margin-right: 5px;">
+                                <button type="submit" style="padding: 6px 12px; background: #8b7355; color: white; border: none; border-radius: 4px; cursor: pointer;">Изменить пароль</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('manage_sellers') }}" class="seller-action-form" onsubmit="return confirm('Удалить пользователя сервиса {{ su.name }}?');">
+                                <input type="hidden" name="action" value="delete_service">
+                                <input type="hidden" name="service_id" value="{{ su.id }}">
+                                <button type="submit" style="padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Удалить</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% for su in service_users %}
+            <div class="seller-card">
+                <div class="seller-card-header">
+                    <div class="seller-card-row">
+                        <div class="seller-card-label">Имя:</div>
+                        <div class="seller-card-value">{{ su.name }}</div>
+                    </div>
+                    <div class="seller-card-row">
+                        <div class="seller-card-label">Логин:</div>
+                        <div class="seller-card-value">{{ su.username }}</div>
+                    </div>
+                </div>
+                <div class="seller-actions">
+                    <form method="POST" action="{{ url_for('manage_sellers') }}" class="seller-action-form">
+                        <input type="hidden" name="action" value="change_service_password">
+                        <input type="hidden" name="service_id" value="{{ su.id }}">
+                        <input type="password" name="new_password" placeholder="Новый пароль" required>
+                        <button type="submit" class="btn-change-password">Изменить пароль</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('manage_sellers') }}" class="seller-action-form" onsubmit="return confirm('Удалить пользователя сервиса {{ su.name }}?');">
+                        <input type="hidden" name="action" value="delete_service">
+                        <input type="hidden" name="service_id" value="{{ su.id }}">
+                        <button type="submit" class="btn-delete">Удалить</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color: #666; text-align: center; padding: 20px;">Пользователи сервиса не добавлены</p>
+        {% endif %}
+    </div>
+
+    <!-- Добавить продавца -->
+    <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px;">
+        <h2 style="color: #8b7355; margin-bottom: 20px;">Добавить нового продавца</h2>
+        <form method="POST" action="{{ url_for('manage_sellers') }}" style="display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 500px;">
+            <input type="hidden" name="action" value="add">
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Имя <span style="color:#c00">*</span>:</label>
+                <input type="text" name="name" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Логин <span style="color:#c00">*</span>:</label>
+                <input type="text" name="username" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Пароль <span style="color:#c00">*</span>:</label>
+                <input type="password" name="password" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+            <div>
+                <button type="submit" style="padding: 10px 20px; background: #8b7355; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; width: auto;">Добавить</button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Добавить инвестора -->
+    <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px;">
+        <h2 style="color: #8b7355; margin-bottom: 20px;">Добавить нового инвестора</h2>
+        <form method="POST" action="{{ url_for('manage_sellers') }}" style="display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 500px;">
+            <input type="hidden" name="action" value="add_investor">
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Псевдоним / Имя <span style="color:#c00">*</span>:</label>
+                <input type="text" name="name" required placeholder="Короткое имя для идентификации" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">ФИО:</label>
+                <input type="text" name="full_name" placeholder="Полное имя инвестора" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Телефон:</label>
+                <input type="text" name="phone" placeholder="+7..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Почта:</label>
+                <input type="email" name="email" placeholder="example@mail.com" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+            <div>
+                <button type="submit" style="padding: 10px 20px; background: #B58358; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; width: auto;">Добавить инвестора</button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Список продавцов -->
+    <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px;">
+        <h2 style="color: #8b7355; margin-bottom: 20px;">Список продавцов</h2>
+        {% if sellers %}
+            <!-- Таблица для десктопа -->
+            <table class="sellers-table">
+                <thead>
+                    <tr>
+                        <th>Имя</th>
+                        <th>Логин</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for seller in sellers %}
+                    <tr>
+                        <td>{{ seller.name }}</td>
+                        <td>{{ seller.username }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('manage_sellers') }}" class="seller-action-form">
+                                <input type="hidden" name="action" value="change_password">
+                                <input type="hidden" name="seller_id" value="{{ seller.id }}">
+                                <input type="password" name="new_password" placeholder="Новый пароль" required style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; margin-right: 5px;">
+                                <button type="submit" style="padding: 6px 12px; background: #8b7355; color: white; border: none; border-radius: 4px; cursor: pointer;">Изменить пароль</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('manage_sellers') }}" class="seller-action-form" onsubmit="return confirm('Вы уверены, что хотите удалить этого продавца?');">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="seller_id" value="{{ seller.id }}">
+                                <button type="submit" style="padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Удалить</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <!-- Карточки для мобильных -->
+            {% for seller in sellers %}
+            <div class="seller-card">
+                <div class="seller-card-header">
+                    <div class="seller-card-row">
+                        <div class="seller-card-label">Имя:</div>
+                        <div class="seller-card-value">{{ seller.name }}</div>
+                    </div>
+                    <div class="seller-card-row">
+                        <div class="seller-card-label">Логин:</div>
+                        <div class="seller-card-value">{{ seller.username }}</div>
+                    </div>
+                </div>
+                <div class="seller-actions">
+                    <form method="POST" action="{{ url_for('manage_sellers') }}" class="seller-action-form">
+                        <input type="hidden" name="action" value="change_password">
+                        <input type="hidden" name="seller_id" value="{{ seller.id }}">
+                        <input type="password" name="new_password" placeholder="Новый пароль" required>
+                        <button type="submit" class="btn-change-password">Изменить пароль</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('manage_sellers') }}" class="seller-action-form" onsubmit="return confirm('Вы уверены, что хотите удалить этого продавца?');">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="seller_id" value="{{ seller.id }}">
+                        <button type="submit" class="btn-delete">Удалить</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color: #666; text-align: center; padding: 20px;">Продавцы не добавлены</p>
+        {% endif %}
+    </div>
+    
+    <!-- Список инвесторов -->
+    <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <h2 style="color: #8b7355; margin-bottom: 20px;">Список инвесторов</h2>
+        {% if investors %}
+            <!-- Таблица для десктопа -->
+            <table class="sellers-table">
+                <thead>
+                    <tr>
+                        <th>Псевдоним</th>
+                        <th>ФИО</th>
+                        <th>Телефон</th>
+                        <th>Почта</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for investor in investors %}
+                    <tr>
+                        <td>{{ investor.name }}</td>
+                        <td>{{ investor.full_name or '—' }}</td>
+                        <td>{{ investor.phone or '—' }}</td>
+                        <td>{{ investor.email or '—' }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('manage_sellers') }}" class="seller-action-form" onsubmit="return confirm('Вы уверены, что хотите удалить инвестора {{ investor.name }}?');">
+                                <input type="hidden" name="action" value="delete_investor">
+                                <input type="hidden" name="investor_id_del" value="{{ investor.id }}">
+                                <button type="submit" style="padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Удалить</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <!-- Карточки для мобильных -->
+            {% for investor in investors %}
+            <div class="seller-card">
+                <div class="seller-card-header">
+                    <div class="seller-card-row">
+                        <div class="seller-card-label">Псевдоним:</div>
+                        <div class="seller-card-value">{{ investor.name }}</div>
+                    </div>
+                    {% if investor.full_name %}
+                    <div class="seller-card-row">
+                        <div class="seller-card-label">ФИО:</div>
+                        <div class="seller-card-value">{{ investor.full_name }}</div>
+                    </div>
+                    {% endif %}
+                    {% if investor.phone %}
+                    <div class="seller-card-row">
+                        <div class="seller-card-label">Телефон:</div>
+                        <div class="seller-card-value">{{ investor.phone }}</div>
+                    </div>
+                    {% endif %}
+                    {% if investor.email %}
+                    <div class="seller-card-row">
+                        <div class="seller-card-label">Почта:</div>
+                        <div class="seller-card-value">{{ investor.email }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="seller-actions">
+                    <form method="POST" action="{{ url_for('manage_sellers') }}" class="seller-action-form" onsubmit="return confirm('Вы уверены, что хотите удалить инвестора {{ investor.name }}?');">
+                        <input type="hidden" name="action" value="delete_investor">
+                        <input type="hidden" name="investor_id_del" value="{{ investor.id }}">
+                        <button type="submit" class="btn-delete">Удалить</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color: #666; text-align: center; padding: 20px;">Инвесторы не добавлены</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

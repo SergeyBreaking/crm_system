@@ -1,0 +1,694 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .stats-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;  /* Отступ для фиксированного логотипа */
+    }
+    
+    /* Иконка сверху - фиксированная */
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .logo-icon a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+    }
+    
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    /* Карточка периода */
+    .period-card {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 12px 24px;
+        border-radius: 43px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 30px;
+        display: block;
+        width: 65%;
+        margin-left: auto;
+        margin-right: auto;
+        box-sizing: border-box;
+    }
+    
+    /* Карточка общей суммы расходов */
+    .total-expense-card {
+        background: #F8F4EE;
+        color: #333;
+        padding: 20px 50px;
+        border-radius: 20px;
+        text-align: center;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+        text-decoration: none;
+        display: block;
+    }
+    
+    .total-expense-card:hover {
+        background: #F0E8DC;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    
+    .total-expense-card h2 {
+        font-size: 48px;
+        font-weight: bold;
+        margin: 0;
+        color: #333;
+    }
+    
+    .total-expense-card p {
+        font-size: 14px;
+        margin: 10px 0 0;
+        opacity: 0.9;
+        color: #333;
+    }
+    
+    /* Список расходов по датам */
+    .expense-list {
+        margin: 0 0 30px 0;
+    }
+    
+    .expense-date-group {
+        margin-bottom: 25px;
+    }
+    
+    .expense-date-header {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+        padding-left: 5px;
+    }
+    
+    .expense-item {
+        background: rgba(0, 0, 0, 0.15);
+        padding: 15px 20px;
+        border-radius: 20px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.2s;
+        position: relative;
+    }
+    
+    .expense-item:hover {
+        background: rgba(0, 0, 0, 0.2);
+    }
+    
+    .expense-item > div:first-child {
+        flex: 1;
+        min-width: 0;
+        padding-right: 15px;
+    }
+    
+    .expense-item strong {
+        color: #333;
+        font-weight: 500;
+        display: block;
+    }
+    
+    .expense-item .amount {
+        color: #333;
+        font-weight: bold;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .expense-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .expense-delete-form {
+        margin: 0;
+    }
+
+    .expense-delete-btn {
+        background: transparent;
+        border: none;
+        color: #a94442;
+        font-size: 16px;
+        cursor: pointer;
+        padding: 0 4px;
+    }
+    
+    .expense-comment {
+        display: none;
+        margin-top: 10px;
+        padding: 10px 15px;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 10px;
+        font-size: 14px;
+        color: #666;
+        font-style: italic;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        max-width: 100%;
+    }
+    
+    .expense-item.active .expense-comment,
+    .expense-item.has-comment .expense-comment {
+        display: block;
+    }
+    
+    .expense-empty {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        color: #666;
+    }
+    
+    /* Форма выбора периода */
+    .period-selector {
+        background: rgba(255, 255, 255, 0.7);
+        padding: 15px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .period-selector form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .period-selector .form-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .period-selector select,
+    .period-selector input {
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .period-selector label {
+        font-weight: 500;
+        color: #333;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    
+    /* Кнопка добавления (плюс) */
+    .add-button {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #B58358;
+        color: white;
+        border: none;
+        font-size: 32px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+    }
+    
+    .add-button:hover {
+        transform: translateX(-50%) scale(1.1);
+    }
+    
+    .add-button.active {
+        transform: translateX(-50%) rotate(45deg);
+    }
+    
+    /* Модальное окно */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 200;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    
+    .modal-overlay.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: #F7F3EC;
+        border-radius: 20px;
+        padding: 30px;
+        max-width: 500px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+    
+    .modal-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.1);
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-close:hover {
+        background: rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Формы добавления */
+    .form-section {
+        background: rgba(255, 255, 255, 0.7);
+        padding: 20px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        display: none;
+    }
+    
+    .form-section.active {
+        display: block;
+    }
+    
+    .form-section h3 {
+        margin: 0 0 15px 0;
+        color: #333;
+        font-size: 18px;
+    }
+    
+    .form-section form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .form-section label {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        color: #333;
+        font-weight: 500;
+    }
+    
+    .form-section input[type="text"],
+    .form-section input[type="number"],
+    .form-section input[type="date"],
+    .form-section select {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+        background: white;
+    }
+    
+    .form-section input[type="submit"] {
+        background: #B58358;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        align-self: flex-start;
+    }
+    
+    .form-section .submit-red {
+        background: #f44336;
+    }
+    
+    /* Табы для переключения между формами */
+    .form-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .form-tab {
+        padding: 10px 20px;
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        font-size: 16px;
+        color: #666;
+        font-weight: 500;
+        margin-bottom: -2px;
+    }
+    
+    .form-tab.active {
+        color: #B58358;
+        border-bottom-color: #B58358;
+    }
+    
+    .back-link {
+        display: block;
+        text-align: center;
+        margin-top: 30px;
+        margin-bottom: 80px;
+        color: #B58358;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .back-link:hover {
+        text-decoration: underline;
+    }
+    
+    @media (min-width: 768px) {
+        .stats-container {
+            max-width: 600px;
+            padding-top: 90px;
+        }
+        
+        .add-button {
+            bottom: 30px;
+        }
+        
+        .total-expense-card h2 {
+            font-size: 52px;
+        }
+        
+        .period-selector form {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        
+        .period-selector .form-row {
+            flex: 1;
+        }
+    }
+</style>
+
+<div class="stats-container">
+    <!-- Иконка - фиксированная -->
+    <div class="logo-icon">
+        <a href="{{ url_for('main') }}">
+            <img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo">
+        </a>
+    </div>
+    
+    <!-- Выбор периода -->
+    <div class="period-selector">
+        <form method="GET" id="filterForm">
+            <div class="form-row">
+                <select name="period_type" onchange="toggleCustom(this.value); autoSubmitFilter();">
+                    <option value="current_month" {% if period_type == 'current_month' %}selected{% endif %}>Месяц</option>
+                    <option value="custom" {% if period_type == 'custom' %}selected{% endif %}>Произвольный период</option>
+                </select>
+
+                <div id="month-select" style="display: flex; gap: 10px; flex: 1;">
+                    <select name="month" onchange="autoSubmitFilter()">
+                        {% for m in range(1,13) %}
+                            <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>
+                                {{ ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][m-1] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <select name="year" onchange="autoSubmitFilter()">
+                        {% for y in all_years %}
+                            <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="custom-dates" style="display: none; gap: 10px; flex: 1;">
+                    <input type="date" name="start_date" value="{{ request.args.get('start_date', '') }}" style="flex: 1;" onchange="autoSubmitCustomDates()">
+                    <input type="date" name="end_date" value="{{ request.args.get('end_date', '') }}" style="flex: 1;" onchange="autoSubmitCustomDates()">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <label>
+                    <strong>Город:</strong>
+                    <select name="city" style="flex: 1;" onchange="autoSubmitFilter()">
+                        <option value="all" {% if city_filter == 'all' %}selected{% endif %}>Все города</option>
+                        {% for city in all_cities %}
+                            <option value="{{ city }}" {% if city_filter == city %}selected{% endif %}>{{ city }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>
+                    <strong>Тип расхода:</strong>
+                    <select name="expense_type" style="flex: 1;" onchange="autoSubmitFilter()">
+                        <option value="all" {% if expense_type_filter == 'all' %}selected{% endif %}>Все типы</option>
+                        {% for et in expense_types %}
+                            <option value="{{ et.id }}" {% if expense_type_filter == et.id|string %}selected{% endif %}>{{ et.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+
+            <div class="form-row" style="margin-top: 10px;">
+                <label>
+                    <strong>Источник:</strong>
+                    <select name="expense_source" style="flex: 1;" onchange="autoSubmitFilter()">
+                        <option value="all" {% if expense_source_filter == 'all' %}selected{% endif %}>Все расходы</option>
+                        <option value="sale" {% if expense_source_filter == 'sale' %}selected{% endif %}>По изделиям (из продаж)</option>
+                        <option value="general" {% if expense_source_filter == 'general' %}selected{% endif %}>Основные расходы</option>
+                    </select>
+                </label>
+            </div>
+        </form>
+        <div style="margin-top: 14px; text-align: center;">
+            <a href="{{ url_for('manager_stats') }}" class="action-btn" style="display: inline-block; padding: 12px 24px; border-radius: 10px; background: #B58358; color: white; text-decoration: none; font-weight: 500;">История бонусов</a>
+        </div>
+    </div>
+
+    <!-- Заголовок периода -->
+    <div class="period-card">
+        {{ period_label }}{% if city_filter != 'all' %} ({{ city_filter }}){% endif %}
+    </div>
+
+    <!-- Общая сумма расходов (только для админа) -->
+    {% if session.get('is_admin', False) %}
+    <a href="#expense-list" class="total-expense-card">
+        <h2>{{ "%.0f"|format(total_expenses) }}$</h2>
+        <p>Расходы</p>
+    </a>
+    {% endif %}
+
+    <!-- Расходы по датам -->
+    <div class="expense-list" id="expense-list">
+        {% if expenses_by_date %}
+            {% for exp_date, expenses in expenses_by_date %}
+            <div class="expense-date-group">
+                <div class="expense-date-header">
+                    {% set months_ru_short = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'] %}
+                    {{ exp_date.day }} {{ months_ru_short[exp_date.month - 1] }}
+                </div>
+                {% for expense in expenses %}
+                <div class="expense-item{% if expense.description %} has-comment{% endif %}" onclick="this.classList.toggle('active')">
+                    <div>
+                        <strong>{{ expense.type }}</strong>
+                        {% if expense.description %}
+                        <div class="expense-comment">{{ expense.description }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="expense-actions">
+                        <span class="amount">{{ "%.0f"|format(expense.amount) }}$</span>
+                        <form method="POST" action="{{ url_for('delete_expense') }}" class="expense-delete-form" onclick="event.stopPropagation();">
+                            <input type="hidden" name="expense_id" value="{{ expense.id }}">
+                            <input type="hidden" name="source" value="{{ 'sale' if expense.is_sale_expense else 'general' }}">
+                            <button type="submit" class="expense-delete-btn" title="Удалить расход">✕</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="expense-empty">Пока нет расходов</div>
+        {% endif %}
+    </div>
+
+<!--    <a href="{{ url_for('sales') }}" class="back-link">← Вернуться к списку продаж</a>-->
+</div>
+
+<!-- Кнопка добавления (плюс) -->
+<button class="add-button" id="addButton" onclick="toggleModal()">+</button>
+
+<!-- Модальное окно с формами -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="toggleModal()">×</button>
+        
+        <!-- Табы для переключения между формами -->
+        <div class="form-tabs">
+            <button class="form-tab active" onclick="switchTab('expense')">Добавить расход</button>
+            <button class="form-tab" onclick="switchTab('type')">Новый тип</button>
+        </div>
+        
+        <!-- Форма добавления общего расхода -->
+        <div class="form-section active" id="expenseForm">
+            <h3>Добавить общий расход (не привязанный к продаже)</h3>
+            <form method="POST" action="{{ url_for('add_general_expense') }}" onsubmit="handleFormSubmit(event)">
+                <label>
+                    Тип расхода <span class="required-mark">*</span>:
+                    <select name="expense_type_id" required>
+                        {% for et in expense_types %}
+                            <option value="{{ et.id }}">{{ et.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label>
+                    Сумма <span class="required-mark">*</span>:
+                    <input type="number" step="0.01" name="amount" required>
+                </label>
+
+                <label>
+                    Город (опционально):
+                    <select name="city_id">
+                        <option value="none">Без города</option>
+                        {% for city in cities %}
+                            <option value="{{ city.id }}">{{ city.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label>
+                    Дата (оставьте пустым для сегодня):
+                    <input type="date" name="date">
+                </label>
+
+                <label>
+                    Комментарий:
+                    <input type="text" name="description" placeholder="Введите комментарий (необязательно)">
+                </label>
+
+                <input type="submit" value="Добавить расход" class="submit-red">
+            </form>
+        </div>
+
+        <!-- Форма добавления нового типа расхода -->
+        <div class="form-section" id="typeForm">
+            <h3>Добавить новый тип расхода</h3>
+            <form method="POST" action="{{ url_for('add_expense_type') }}" onsubmit="handleFormSubmit(event)">
+                <label>
+                    Название типа <span class="required-mark">*</span>:
+                    <input type="text" name="name" required placeholder="Название типа">
+                </label>
+                <input type="submit" value="Добавить тип расхода">
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleCustom(val) {
+        document.getElementById('month-select').style.display = val === 'current_month' ? 'flex' : 'none';
+        document.getElementById('custom-dates').style.display = val === 'custom' ? 'flex' : 'none';
+    }
+    toggleCustom('{{ period_type }}');
+
+    function autoSubmitFilter() {
+        document.getElementById('filterForm').submit();
+    }
+
+    function autoSubmitCustomDates() {
+        var start = document.querySelector('[name="start_date"]').value;
+        var end = document.querySelector('[name="end_date"]').value;
+        if (start && end) {
+            document.getElementById('filterForm').submit();
+        }
+    }
+    
+    function toggleModal() {
+        const modal = document.getElementById('modalOverlay');
+        const button = document.getElementById('addButton');
+        modal.classList.toggle('active');
+        button.classList.toggle('active');
+    }
+    
+    function closeModalOnOverlay(event) {
+        if (event.target === event.currentTarget) {
+            toggleModal();
+        }
+    }
+    
+    function switchTab(tabName) {
+        // Переключение табов
+        const tabs = document.querySelectorAll('.form-tab');
+        const forms = document.querySelectorAll('.form-section');
+        
+        tabs.forEach(tab => tab.classList.remove('active'));
+        forms.forEach(form => form.classList.remove('active'));
+        
+        if (tabName === 'expense') {
+            tabs[0].classList.add('active');
+            document.getElementById('expenseForm').classList.add('active');
+        } else {
+            tabs[1].classList.add('active');
+            document.getElementById('typeForm').classList.add('active');
+        }
+    }
+    
+    function handleFormSubmit(event) {
+        // Форма отправится нормально, модальное окно закроется после перезагрузки страницы
+        // Если нужно закрыть сразу без перезагрузки, можно использовать fetch
+    }
+</script>
+{% endblock %}

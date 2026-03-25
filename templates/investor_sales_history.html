@@ -1,0 +1,668 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .index-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;  /* Отступ для фиксированного логотипа */
+    }
+    
+    /* Иконка сверху - фиксированная */
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .logo-icon a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+    }
+    
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    /* Заголовок истории */
+    .history-title-card {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 12px 24px;
+        border-radius: 43px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 20px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Фильтры */
+    .city-filter {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .city-filter form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 15px 20px;
+        border-radius: 15px;
+    }
+    
+    .city-filter .filter-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .city-filter label {
+        font-weight: 500;
+        color: #333;
+        white-space: nowrap;
+        min-width: 70px;
+        text-align: left;
+    }
+    
+    .city-filter select {
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+        background: white;
+        flex: 1;
+        min-width: 0;
+    }
+    
+    /* Большая карточка с суммой реализованных позиций */
+    .total-realized-card {
+        background: #514D4A;
+        color: white;
+        padding: 30px 25px;
+        border-radius: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        text-decoration: none;
+        display: block;
+    }
+    
+    .total-realized-card:hover {
+        background: #3d3a38;
+        transform: translateY(-2px);
+    }
+    
+    .total-realized-card .amount {
+        font-size: 42px;
+        font-weight: bold;
+        margin: 0;
+        color: white;
+    }
+    
+    .total-realized-card .label {
+        font-size: 14px;
+        margin: 10px 0 0;
+        opacity: 0.9;
+        color: white;
+    }
+    
+    /* Две карточки метрик */
+    .metrics-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .metric-card {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        text-decoration: none;
+        display: block;
+        color: inherit;
+    }
+    
+    .metric-card:hover {
+        background: rgba(255, 255, 255, 0.8);
+        transform: translateY(-2px);
+    }
+    
+    .metric-card h2 {
+        font-size: 36px;
+        font-weight: bold;
+        margin: 0;
+        color: #333;
+    }
+    
+    .metric-card p {
+        font-size: 14px;
+        color: #333;
+        margin: 8px 0 0;
+    }
+    
+    /* Карточка расходов */
+    .expenses-card {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 20px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .expenses-card:hover {
+        background: rgba(255, 255, 255, 0.8);
+        transform: translateY(-2px);
+    }
+    
+    .expenses-card .expenses-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .expenses-card .expenses-info p {
+        font-size: 14px;
+        color: #333;
+        margin: 0 0 5px 0;
+        font-weight: 500;
+    }
+    
+    .expenses-card .expenses-info h2 {
+        font-size: 32px;
+        font-weight: bold;
+        margin: 0;
+        color: #333;
+    }
+    
+    .view-expenses-btn {
+        background: #B58358;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 15px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+    }
+    
+    .view-expenses-btn:hover {
+        background: #9d7149;
+    }
+    
+    /* Карточка прибыли */
+    .profit-card {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 30px 25px;
+        border-radius: 20px;
+        text-align: center;
+        margin-bottom: 30px;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        text-decoration: none;
+        display: block;
+        color: inherit;
+    }
+    
+    .profit-card:hover {
+        background: rgba(255, 255, 255, 0.8);
+        transform: translateY(-2px);
+    }
+    
+    .profit-card h2 {
+        font-size: 42px;
+        font-weight: bold;
+        margin: 0;
+        color: #333;
+    }
+    
+    .profit-card p {
+        font-size: 14px;
+        color: #333;
+        margin: 10px 0 0;
+    }
+    
+    /* Заголовок списка */
+    .sales-header {
+        font-size: 18px;
+        font-weight: 500;
+        color: #333;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    /* Список продаж */
+    .sales-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .sale-card {
+        background: white;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .sale-card-image-wrapper {
+        padding: 15px;
+        background: white;
+        min-height: 500px;
+    }
+    
+    .sale-card-image {
+        width: 100%;
+        height: 100%;
+        min-height: 470px;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+        background: #f8f8f8;
+        border-radius: 15px;
+    }
+    
+    .sale-card-content {
+        padding: 20px;
+    }
+    
+    .sale-data-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .sale-data-row:last-child {
+        border-bottom: none;
+    }
+    
+    .sale-data-label {
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .sale-data-value {
+        color: #333;
+        font-weight: bold;
+    }
+    
+    /* Расходы внутри карточки */
+    .expenses-in-card {
+        margin-top: 10px;
+    }
+    
+    .expense-item-in-card {
+        background: rgba(0, 0, 0, 0.15);
+        padding: 10px 15px;
+        border-radius: 10px;
+        margin-top: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .expense-item-in-card strong {
+        color: #333;
+        font-weight: 500;
+    }
+    
+    .expense-item-in-card .amount {
+        color: #333;
+        font-weight: bold;
+    }
+    
+    /* Карточка прибыли внутри продажи */
+    .profit-in-card {
+        background: #514D4A;
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .profit-in-card strong {
+        color: white;
+        font-weight: bold;
+    }
+    
+    .profit-in-card .amount {
+        color: white;
+        font-weight: bold;
+        font-size: 20px;
+    }
+    
+    /* Кнопка изменения */
+    .edit-btn {
+        display: block;
+        width: 100%;
+        background: #B58358;
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 15px;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+    }
+    
+    @media (min-width: 768px) {
+        .index-container {
+            max-width: 600px;
+            padding-top: 90px;
+        }
+        
+        .city-filter .filter-row {
+            width: 100%;
+        }
+        
+        .total-realized-card .amount {
+            font-size: 52px;
+        }
+        
+        .metric-card h2 {
+            font-size: 48px;
+        }
+        
+        .expenses-card .expenses-info h2 {
+            font-size: 42px;
+        }
+        
+        .profit-card h2 {
+            font-size: 52px;
+        }
+        
+        .sale-card {
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    }
+</style>
+
+<div class="index-container">
+    <!-- Иконка - фиксированная -->
+    <div class="logo-icon">
+        <a href="{{ url_for('main') }}">
+            <img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo">
+        </a>
+    </div>
+    
+    <!-- Заголовок истории -->
+    <div class="history-title-card">
+        История продаж {{ investor.name }}
+    </div>
+    
+    <!-- Фильтры -->
+    <div class="city-filter">
+        <form method="GET">
+            <div class="filter-row">
+                <label><strong>Год:</strong></label>
+                <select name="year" onchange="this.form.submit()">
+                    <option value="all">Все годы</option>
+                    {% for year in all_years %}
+                        <option value="{{ year }}" {% if year_filter == year|string %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-row">
+                <label><strong>Месяц:</strong></label>
+                <select name="month" onchange="this.form.submit()">
+                    <option value="all">Все месяцы</option>
+                    {% for m in range(1,13) %}
+                        <option value="{{ m }}" {% if month_filter == m|string %}selected{% endif %}>{{ months_ru[m-1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-row">
+                <label><strong>Период:</strong></label>
+                <select name="period" onchange="this.form.submit()">
+                    <option value="all" {% if period_filter == 'all' %}selected{% endif %}>Все продажи</option>
+                    <option value="current_month" {% if period_filter == 'current_month' %}selected{% endif %}>Текущий месяц</option>
+                </select>
+            </div>
+            <input type="hidden" name="sort" value="{{ sort }}">
+        </form>
+    </div>
+
+    <!-- Большая карточка с суммой реализованных позиций (только для админа) -->
+    {% if is_admin %}
+    <a href="#sales-list" class="total-realized-card">
+        <div class="amount">{{ "%.0f"|format(total_realized) }}$</div>
+        <div class="label">Сумма реализованных позиций</div>
+    </a>
+    {% endif %}
+
+    <!-- Две карточки метрик -->
+    <div class="metrics-row">
+        <a href="#sales-list" class="metric-card">
+            <h2>{{ count_sales }}</h2>
+            <p>Реализовано</p>
+        </a>
+        {% if is_admin %}
+        <a href="#sales-list" class="metric-card">
+            <h2>{{ "%.0f"|format(gross_income) }}$</h2>
+            <p>Доход</p>
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Карточка расходов (только для админа) -->
+    {% if is_admin %}
+    {% if not is_investor %}
+    <a href="{{ url_for('stats') }}" class="expenses-card">
+        <div class="expenses-info">
+            <p>Расходы</p>
+            <h2>{{ "%.0f"|format(total_expenses) }}$</h2>
+        </div>
+        <span class="view-expenses-btn">Просмотреть расходы</span>
+    </a>
+    {% else %}
+    <div class="expenses-card" style="cursor: default; justify-content: center;">
+        <div class="expenses-info" style="text-align: center; align-items: center;">
+            <p>Расходы</p>
+            <h2>{{ "%.0f"|format(total_expenses) }}$</h2>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- Карточка прибыли (только для админа) -->
+    {% if is_admin %}
+    <a href="#sales-list" class="profit-card">
+        <h2>{{ "%.0f"|format(net_profit) }}$</h2>
+        <p>Прибыль с вычетом расходов</p>
+    </a>
+    {% endif %}
+
+    <!-- Заголовок списка -->
+    <h2 class="sales-header" id="sales-list">История продаж</h2>
+
+    <!-- Список продаж -->
+    <ul class="sales-list">
+        {% for s in sales %}
+        <li class="sale-card">
+            <div class="sale-card-image-wrapper">
+                {% if s.photo %}
+                    <img src="{{ url_for('uploaded_file', filename=s.photo) }}" alt="фото" class="sale-card-image">
+                {% else %}
+                    <div class="sale-card-image" style="background: #f8f8f8; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 15px;">
+                    Нет фото
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="sale-card-content">
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Наименование</span>
+                    <span class="sale-data-value">{{ s.product_name }}</span>
+                </div>
+                
+                {% if s.reference %}
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Reference</span>
+                    <span class="sale-data-value">{{ s.reference }}</span>
+                </div>
+                {% endif %}
+                
+                {% if s.item_year %}
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Год изделия</span>
+                    <span class="sale-data-value">{{ s.item_year }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Комиссионный</span>
+                    <span class="sale-data-value">{% if s.komissionnyy %}да{% else %}нет{% endif %}</span>
+                </div>
+                
+                {% if s.investor %}
+                <div class="sale-data-row">
+                    <span class="sale-data-label">{% if s.investor.is_commission_client %}Комиссионный клиент{% else %}Инвестор{% endif %}</span>
+                    <span class="sale-data-value">{{ s.investor.name }}</span>
+                </div>
+                {% endif %}
+                
+                {% if s.client %}
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Клиент</span>
+                    <span class="sale-data-value">{{ s.client.full_name }}</span>
+                </div>
+                {% for label, val in s.client.display_contacts() %}
+                <div class="sale-data-row" style="padding-left: 15px;">
+                    <span class="sale-data-label">{{ label }}</span>
+                    <span class="sale-data-value">{{ val }}</span>
+                </div>
+                {% endfor %}
+                {% endif %}
+                
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Город</span>
+                    <span class="sale-data-value">{{ s.city.name }}</span>
+                </div>
+                
+                {% if is_admin %}
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Покупка</span>
+                    <span class="sale-data-value">{{ "%.0f"|format(s.buy_price) }}$</span>
+                </div>
+                
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Продажа</span>
+                    <span class="sale-data-value">{{ "%.0f"|format(s.sell_price) }}$</span>
+                </div>
+                
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Расход</span>
+                    <span class="sale-data-value">
+                        {% if s.expenses %}
+                            {{ "%.0f"|format(s.expenses|sum(attribute='amount')) }}$
+                        {% else %}
+                            0$
+                        {% endif %}
+                    </span>
+                </div>
+                
+                {% if s.expenses %}
+                <div class="expenses-in-card">
+                            {% for exp in s.expenses %}
+                    <div class="expense-item-in-card">
+                        <strong>{{ exp.expense_type.name }}</strong>
+                        <span class="amount">{{ "%.0f"|format(exp.amount) }}$</span>
+                    </div>
+                            {% endfor %}
+                </div>
+                {% endif %}
+                {% endif %}
+                
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Продавец</span>
+                    <span class="sale-data-value">{{ s.employee.name }}</span>
+                </div>
+                
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Дата</span>
+                    <span class="sale-data-value">
+                        {% set months_ru = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'] %}
+                        {{ s.date.day }} {{ months_ru[s.date.month - 1] }} {{ s.date.year }}
+                    </span>
+                </div>
+                
+                {% if s.komplektatsiya %}
+                <div class="sale-data-row">
+                    <span class="sale-data-label">Комплектация</span>
+                    <span class="sale-data-value">{{ s.komplektatsiya }}</span>
+                </div>
+                {% endif %}
+                
+                {% if is_admin %}
+                <div class="profit-in-card">
+                    <strong>Прибыль</strong>
+                    <span class="amount">{{ "%.0f"|format(s.profit) }}$</span>
+                </div>
+                {% endif %}
+                
+                {% if not is_investor %}
+                <a href="{{ url_for('edit_sale', sale_id=s.id) }}" class="edit-btn">Изменить</a>
+                {% endif %}
+            </div>
+        </li>
+        {% else %}
+        <li class="empty-state">
+            Пока нет продаж для этого инвестора.
+            <br><br>
+            <a href="{{ url_for('add_sale') }}" style="color: #B58358; font-weight: bold;">Добавьте первую!</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

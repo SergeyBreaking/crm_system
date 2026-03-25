@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .item-detail-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;
+    }
+    
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .logo-icon a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+    }
+    
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    .item-detail-card {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .item-image-wrapper {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    
+    .item-image {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        border-radius: 15px;
+    }
+    
+    .detail-field {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .detail-field:last-child {
+        border-bottom: none;
+    }
+    
+    .detail-label {
+        font-size: 14px;
+        color: #666;
+        font-weight: 500;
+    }
+    
+    .detail-value {
+        font-size: 16px;
+        color: #333;
+        font-weight: 600;
+        text-align: right;
+    }
+    
+    .detail-price {
+        font-size: 18px;
+        color: #B58358;
+        font-weight: bold;
+    }
+    
+    .expenses-section {
+        margin: 20px 0;
+    }
+    
+    .expenses-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+        padding-left: 5px;
+    }
+    
+    .expense-item {
+        background: rgba(0, 0, 0, 0.15);
+        padding: 15px 20px;
+        border-radius: 20px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        font-size: 16px;
+        transition: background 0.2s;
+        position: relative;
+    }
+    
+    .expense-item:hover {
+        background: rgba(0, 0, 0, 0.2);
+    }
+    
+    .expense-item > div:first-child {
+        flex: 1;
+        min-width: 0;
+        padding-right: 15px;
+    }
+    
+    .expense-item strong {
+        color: #333;
+        font-weight: 500;
+        display: block;
+    }
+    
+    .expense-item .amount {
+        color: #333;
+        font-weight: bold;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    
+    .expense-comment {
+        font-size: 14px;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .total-profit-section {
+        background: rgba(181, 131, 88, 0.1);
+        border-radius: 15px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    
+    .total-profit-section .detail-price {
+        color: #28a745;
+        font-size: 20px;
+    }
+    
+    .investor-profit-section {
+        background: #514D4A;
+        color: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin: 20px 0;
+    }
+    
+    .investor-profit-section .detail-label {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 16px;
+    }
+    
+    .investor-profit-section .detail-price {
+        color: white;
+        font-size: 28px;
+    }
+    
+    .investor-profit-info {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 10px;
+        text-align: right;
+    }
+    
+    .sold-badge {
+        display: inline-block;
+        background: #28a745;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 15px;
+    }
+    
+    .back-btn {
+        display: block;
+        width: 100%;
+        padding: 15px;
+        background: #B58358;
+        color: white;
+        border-radius: 15px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: 500;
+        margin-top: 20px;
+        transition: background 0.3s ease;
+    }
+    
+    .back-btn:hover {
+        background: #9d7149;
+    }
+    
+    @media (min-width: 768px) {
+        .item-detail-container {
+            max-width: 600px;
+            padding-top: 90px;
+        }
+    }
+</style>
+
+<div class="logo-icon">
+    <a href="{{ url_for('investor_stock_detail') }}">
+        <img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo">
+    </a>
+</div>
+
+<div class="item-detail-container">
+    <div class="item-detail-card">
+        {% if stock_item.sold %}
+        <div class="sold-badge">✅ Продано</div>
+        {% endif %}
+        
+        <!-- Фото -->
+        <div class="item-image-wrapper">
+            {% if stock_item.photo %}
+                <img src="{{ url_for('uploaded_file', filename=stock_item.photo) }}" alt="{{ stock_item.product_name }}" class="item-image">
+            {% else %}
+                <div class="item-image" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 15px;">
+                    Нет фото
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Название -->
+        <div class="detail-field">
+            <span class="detail-label">Название</span>
+            <span class="detail-value">{{ stock_item.product_name }}</span>
+        </div>
+        
+        <!-- Закуп -->
+        <div class="detail-field">
+            <span class="detail-label">Закуп</span>
+            <span class="detail-price">{% if stock_item.buy_price is not none %}{{ "%.0f"|format(stock_item.buy_price) }}${% else %}—{% endif %}</span>
+        </div>
+        
+        <!-- Город -->
+        <div class="detail-field">
+            <span class="detail-label">Город</span>
+            <span class="detail-value">{{ stock_item.city.name }}</span>
+        </div>
+        
+        <!-- Выставленная цена продажи -->
+        <div class="detail-field">
+            <span class="detail-label">Выставленная цена продажи</span>
+            <span class="detail-price">{{ "%.0f"|format(stock_item.expected_sell_price) }}$</span>
+        </div>
+        
+        {% if stock_item.komplektatsiya %}
+        <!-- Комплектация -->
+        <div class="detail-field">
+            <span class="detail-label">Комплектация</span>
+            <span class="detail-value">{{ stock_item.komplektatsiya }}</span>
+        </div>
+        {% endif %}
+        
+        <!-- Полный перечень расходов из стока -->
+        <div class="expenses-section">
+            <div class="expenses-title">Расходы:</div>
+            {% if stock_item.expenses %}
+                {% for expense in stock_item.expenses %}
+                <div class="expense-item">
+                    <div>
+                        <strong>{{ expense.expense_type.name }}</strong>
+                        {% if expense.comment %}
+                        <div class="expense-comment">{{ expense.comment }}</div>
+                        {% endif %}
+                    </div>
+                    <span class="amount">-{{ "%.0f"|format(expense.amount) }}$</span>
+                </div>
+                {% endfor %}
+            {% endif %}
+            
+        {% if stock_item.sold and sale %}
+            <!-- Расходы из продажи (дополнительные к расходам из стока) -->
+            {% if sale.expenses %}
+                {% for expense in sale.expenses %}
+                <div class="expense-item">
+                    <div>
+                        <strong>{{ expense.expense_type.name }}</strong>
+                        {% if expense.comment %}
+                        <div class="expense-comment">{{ expense.comment }}</div>
+                        {% endif %}
+                    </div>
+                    <span class="amount">-{{ "%.0f"|format(expense.amount) }}$</span>
+                </div>
+                {% endfor %}
+            {% endif %}
+            {% if sale.bonus and sale.bonus > 0 %}
+            <div class="expense-item">
+                <div>
+                    <strong>Бонус менеджера</strong>
+                </div>
+                <span class="amount">-{{ "%.0f"|format(sale.bonus) }}$</span>
+            </div>
+            {% endif %}
+        {% endif %}
+        
+        {% if not stock_item.expenses and (not stock_item.sold or not sale or (not sale.expenses and (not sale.bonus or sale.bonus == 0))) %}
+            <div class="expense-item">
+                <div>
+                    <strong>Расходов нет</strong>
+                </div>
+                <span class="amount">0$</span>
+            </div>
+        {% endif %}
+        </div>
+        
+        {% if stock_item.sold and sale %}
+        <!-- Общая прибыль (для проданных позиций) -->
+        <div class="total-profit-section">
+            <div class="detail-field">
+                <span class="detail-label">Общая прибыль</span>
+                <span class="detail-price">{{ "%.0f"|format(total_profit if total_profit is defined else 0) }}$</span>
+            </div>
+        </div>
+        
+        <!-- ВАША прибыль (40%) -->
+        <div class="investor-profit-section">
+            <div class="detail-field" style="border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 15px; margin-bottom: 10px;">
+                <span class="detail-label">ВАША прибыль</span>
+                <span class="detail-price">{{ "%.0f"|format(investor_profit if investor_profit is defined else 0) }}$</span>
+            </div>
+            <div class="investor-profit-info">40% от общей прибыли</div>
+        </div>
+        {% else %}
+        <!-- Если еще не продано - показываем потенциальную прибыль -->
+        <div class="total-profit-section">
+            <div class="detail-field">
+                <span class="detail-label">Потенциальная общая прибыль</span>
+                <span class="detail-price">{{ "%.0f"|format(total_profit if total_profit is defined else 0) }}$</span>
+            </div>
+        </div>
+        
+        <!-- ВАША потенциальная прибыль (40%) -->
+        <div class="investor-profit-section">
+            <div class="detail-field" style="border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 15px; margin-bottom: 10px;">
+                <span class="detail-label">ВАША потенциальная прибыль</span>
+                <span class="detail-price">{{ "%.0f"|format(investor_profit if investor_profit is defined else 0) }}$</span>
+            </div>
+            <div class="investor-profit-info">40% от общей прибыли</div>
+        </div>
+        {% endif %}
+        
+        <a href="{{ url_for('investor_stock_detail') }}" class="back-btn">← Назад к списку позиций</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1312 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .add-sale-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;  /* Отступ для фиксированного логотипа */
+    }
+    
+    /* Логотип - фиксированный */
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .logo-icon a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+    }
+    
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    .page-title {
+        text-align: center;
+        font-size: 18px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 30px;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 12px 24px;
+        border-radius: 43px;
+        display: inline-block;
+        width: auto;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    /* Секция фотографии */
+    .photo-section {
+        margin-bottom: 25px;
+    }
+    
+    .photo-label {
+        font-size: 26px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+        display: block;
+        text-align: center;
+    }
+    
+    .photo-upload-card {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 40px 20px;
+        text-align: center;
+        cursor: pointer;
+        border: 2px dashed transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .photo-upload-card:hover {
+        border-color: #B58358;
+    }
+    
+    .photo-upload-icon {
+        font-size: 48px;
+        margin-bottom: 10px;
+    }
+    
+    .photo-upload-text {
+        font-size: 16px;
+        color: #333;
+    }
+    
+    .photo-preview {
+        display: none;
+        max-width: 100%;
+        max-height: 200px;
+        border-radius: 15px;
+        margin-top: 10px;
+    }
+    
+    .photo-preview.active {
+        display: block;
+    }
+    
+    /* Поля ввода */
+    .form-field {
+        margin-bottom: 20px;
+    }
+    
+    .field-label {
+        font-size: 16px;
+        color: #333;
+        display: block;
+        font-weight: 500;
+        padding: 15px 20px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    
+    .field-input-card {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .field-input-wrapper {
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+    
+    .field-hint {
+        font-size: 13px;
+        color: #888;
+        margin-top: 8px;
+        padding: 0 20px 10px;
+        display: block;
+    }
+    
+    .field-input-card input,
+    .field-input-card select,
+    .field-input-card textarea {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-size: 16px;
+        color: #333;
+        outline: none;
+        width: 100%;
+        padding: 0;
+        font-family: inherit;
+        resize: vertical;
+    }
+    
+    .field-input-card textarea {
+        min-height: 60px;
+        padding: 5px 0;
+    }
+    
+    .field-input-card input::placeholder,
+    .field-input-card textarea::placeholder {
+        color: #999;
+        opacity: 0.7;
+    }
+    
+    .field-input-card select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right center;
+        padding-right: 25px;
+    }
+    
+    /* Расходы */
+    .expense-section {
+        margin-bottom: 20px;
+    }
+    
+    .expense-list {
+        padding: 10px 20px;
+    }
+    
+    .expense-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .expense-item:last-child {
+        border-bottom: none;
+    }
+    
+    .expense-item-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+    }
+    
+    .expense-item-name {
+        font-size: 14px;
+        color: #333;
+    }
+    
+    .expense-item-amount {
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
+        margin-right: 8px;
+    }
+    
+    .remove-expense-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #B58358;
+        color: white;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        line-height: 1;
+    }
+    
+    .add-expense-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #B58358;
+        color: white;
+        border: none;
+        font-size: 28px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 10px auto;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Модальное окно */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-overlay.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: #F7F3EC;
+        border-radius: 25px;
+        padding: 30px;
+        width: 90%;
+        max-width: 400px;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .modal-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: #333;
+        text-align: center;
+        margin-bottom: 25px;
+    }
+    
+    .modal-field {
+        margin-bottom: 20px;
+    }
+    
+    .modal-field-label {
+        font-size: 16px;
+        color: #333;
+        margin-bottom: 10px;
+        display: block;
+        font-weight: 500;
+        cursor: pointer;
+    }
+    
+    .modal-input-card {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 0;
+    }
+    
+    .modal-input-wrapper {
+        padding: 15px 20px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    
+    .modal-input-wrapper:last-child {
+        border-bottom: none;
+    }
+    
+    .modal-input-card input,
+    .modal-input-card select,
+    .modal-input-card textarea {
+        width: 100%;
+        border: none;
+        background: transparent;
+        font-size: 16px;
+        color: #333;
+        outline: none;
+        padding: 0;
+        resize: vertical;
+    }
+    
+    .modal-input-card input::placeholder,
+    .modal-input-card textarea::placeholder {
+        color: #999;
+        opacity: 0.7;
+    }
+    
+    .modal-input-card select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right center;
+        padding-right: 25px;
+    }
+    
+    .modal-submit-btn {
+        width: 100%;
+        background: #B58358;
+        color: white;
+        padding: 15px;
+        border-radius: 20px;
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        margin-top: 20px;
+    }
+    
+    /* Кнопка отправки */
+    .submit-btn {
+        width: 65%;
+        margin: 40px auto 0;
+        display: block;
+        background: #B58358;
+        color: white;
+        padding: 15px;
+        border-radius: 20px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .hidden-input {
+        display: none;
+    }
+    
+    /* Тумблер */
+    .toggle-field {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 0;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 15px 20px;
+    }
+    
+    .toggle-label {
+        font-size: 16px;
+        color: #333;
+        font-weight: 500;
+    }
+    
+    .toggle-switch {
+        position: relative;
+        width: 52px;
+        height: 28px;
+        flex-shrink: 0;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: #ccc;
+        border-radius: 28px;
+        transition: 0.3s;
+    }
+    
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 4px;
+        bottom: 4px;
+        background: white;
+        border-radius: 50%;
+        transition: 0.3s;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider {
+        background: #8FD16A;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider:before {
+        transform: translateX(24px);
+    }
+
+    /* Плашка "Добавить нового ..." */
+    .inline-add-btn {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #B58358;
+        color: white;
+        padding: 14px 20px;
+        border-radius: 0 0 18px 18px;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 500;
+        margin-top: -4px;
+        user-select: none;
+        transition: background 0.2s;
+    }
+    .inline-add-btn:hover { background: #a07248; }
+    .inline-add-btn .plus-icon {
+        font-size: 20px;
+        font-weight: 300;
+        line-height: 1;
+    }
+    .inline-add-form {
+        background: white;
+        border-radius: 18px;
+        padding: 18px 20px 14px;
+        margin-top: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        display: none;
+    }
+    .inline-add-form.open { display: block; }
+    .inline-add-form .iaf-field { margin-bottom: 12px; }
+    .inline-add-form .iaf-label {
+        font-size: 13px;
+        color: #888;
+        margin-bottom: 4px;
+        display: block;
+    }
+    .inline-add-form .iaf-input {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #e0d5c8;
+        border-radius: 10px;
+        font-size: 15px;
+        background: #faf9f7;
+        box-sizing: border-box;
+    }
+    .inline-add-form .iaf-input:focus { outline: none; border-color: #B58358; }
+    .inline-add-form .iaf-hint { font-size: 12px; color: #aaa; margin: -6px 0 10px; }
+    .inline-add-form .iaf-error { color: #c00; font-size: 13px; margin-bottom: 8px; display: none; }
+    .inline-add-form .iaf-submit {
+        width: 100%;
+        padding: 12px;
+        background: #B58358;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .inline-add-form .iaf-submit:hover { background: #a07248; }
+    .inline-add-form .iaf-submit:disabled { background: #ccc; cursor: default; }
+
+    /* Поиск инвестора */
+    .investor-search-wrapper {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .investor-search-wrapper input[type="text"] {
+        flex: 1;
+        min-width: 0;
+    }
+    .investor-search-results {
+        max-height: 200px;
+        overflow-y: auto;
+        border-top: 1px solid rgba(0,0,0,0.08);
+        display: none;
+        width: 100%;
+    }
+    .investor-search-results.active {
+        display: block;
+    }
+    .investor-search-item {
+        padding: 12px 20px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        font-size: 14px;
+    }
+    .investor-search-item:hover {
+        background: rgba(181, 131, 88, 0.1);
+    }
+    .investor-search-item .inv-name {
+        font-weight: 500;
+        color: #333;
+    }
+    .investor-search-item .inv-contacts {
+        font-size: 12px;
+        color: #666;
+        margin-top: 2px;
+    }
+    
+    /* Скрытые формы */
+    .additional-forms {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .form-toggle {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 12px 20px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 16px;
+        color: #333;
+        transition: all 0.3s ease;
+    }
+    
+    .form-toggle:hover {
+        background: rgba(255, 255, 255, 0.7);
+    }
+    
+    .form-toggle::after {
+        content: '▼';
+        transition: transform 0.3s ease;
+    }
+    
+    .form-toggle.active::after {
+        transform: rotate(180deg);
+    }
+    
+    .collapsible-form {
+        display: none;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .collapsible-form.active {
+        display: block;
+    }
+    
+    .collapsible-form .field-input-card {
+        margin-bottom: 15px;
+    }
+    
+    .collapsible-form-btn {
+        width: 100%;
+        background: #B58358;
+        color: white;
+        padding: 12px;
+        border-radius: 15px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+    }
+    
+    @media (min-width: 768px) {
+        .add-sale-container {
+            max-width: 600px;
+            padding-top: 90px;
+        }
+    }
+</style>
+
+<!-- Логотип - фиксированный -->
+<div class="logo-icon">
+    <a href="{{ url_for('main') }}">
+        <img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo">
+    </a>
+</div>
+
+<div class="add-sale-container">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1 class="page-title">Добавление стока</h1>
+    </div>
+    
+    <form method="POST" enctype="multipart/form-data" id="addStockForm">
+        <!-- Фотография -->
+        <div class="photo-section">
+            <label class="photo-label" for="photo-input">Фотография <span class="required-mark">*</span></label>
+            <div class="photo-upload-card" onclick="document.getElementById('photo-input').click()">
+                <div class="photo-upload-icon">📷</div>
+                <div class="photo-upload-text">Загрузить фото</div>
+                <img id="photo-preview" class="photo-preview" alt="Preview">
+            </div>
+            <input type="file" name="photo" id="photo-input" accept="image/*" class="hidden-input">
+        </div>
+        
+        <!-- Категория -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="category">Категория</label>
+                <div class="field-input-wrapper">
+                    <select id="category" name="category">
+                        <option value="">Не указана</option>
+                        {% for value, label in product_categories %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Название -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="product_name">Название <span class="required-mark">*</span></label>
+                <div class="field-input-wrapper">
+                    <input type="text" id="product_name" name="product_name" required placeholder="Введи название">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reference -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="reference">Reference</label>
+                <div class="field-input-wrapper">
+                    <input type="text" id="reference" name="reference" placeholder="Введи ref.">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Тумблер: Комиссионный товар -->
+        <div class="toggle-field">
+            <span class="toggle-label">Комиссионный товар</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="komissionnyy-toggle" onchange="toggleCommission(this.checked)">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <input type="hidden" id="komissionnyy-hidden" name="komissionnyy" value="0">
+        
+        <!-- Год изделия (необязательное) -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="item_year">Год изделия</label>
+                <div class="field-input-wrapper">
+                    <input type="number" id="item_year" name="item_year" min="1900" max="2100" placeholder="Напр. 2024">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Поля для комиссионного товара (скрыты по умолчанию) -->
+        <div id="commission-fields" style="display: none;">
+            <!-- Выбор комиссионного клиента (необязательно) -->
+            <div class="form-field">
+                <div class="field-input-card" style="border-radius: 20px 20px 0 0;">
+                    <label class="field-label">Комиссионный клиент</label>
+                    <div class="field-input-wrapper investor-search-wrapper">
+                        <input type="text" id="investor-comm-search-input" placeholder="Введите для поиска комиссионного клиента..." autocomplete="off" style="flex:1; min-width:0;">
+                        <input type="hidden" id="commission_investor_id" name="commission_investor_id" value="">
+                        <span id="investor-comm-clear-btn" style="display:none; cursor:pointer; color:#888; padding:0 5px; font-size:18px;" title="Очистить">✕</span>
+                    </div>
+                    <div id="investor-comm-search-results" class="investor-search-results"></div>
+                </div>
+                <div class="inline-add-btn" onclick="toggleInlineForm('investor-comm-inline-form', this)">
+                    <span>Добавить нового комиссионного клиента</span>
+                    <span class="plus-icon" id="investor-comm-inline-icon">+</span>
+                </div>
+                <div id="investor-comm-inline-form" class="inline-add-form">
+                    <div class="iaf-error" id="investor-comm-iaf-error"></div>
+                    <div class="iaf-field">
+                        <label class="iaf-label">Псевдоним / Имя <span style="color:#c00">*</span></label>
+                        <input type="text" class="iaf-input" id="iaf-inv-comm-name" placeholder="Короткое имя">
+                    </div>
+                    <div class="iaf-field">
+                        <label class="iaf-label">ФИО</label>
+                        <input type="text" class="iaf-input" id="iaf-inv-comm-full-name" placeholder="Полное имя">
+                    </div>
+                    <div class="iaf-field">
+                        <label class="iaf-label">Телефон</label>
+                        <input type="text" class="iaf-input" id="iaf-inv-comm-phone" placeholder="+7...">
+                    </div>
+                    <div class="iaf-field">
+                        <label class="iaf-label">Почта</label>
+                        <input type="email" class="iaf-input" id="iaf-inv-comm-email" placeholder="email@example.com">
+                    </div>
+                    <!-- Тумблер: Комиссионный клиент -->
+                    <div class="iaf-field" style="display:flex; align-items:center; justify-content:space-between; padding: 4px 0;">
+                        <label class="iaf-label" style="margin-bottom:0; font-size:14px; color:#555;">Комиссионный клиент</label>
+                        <label class="toggle-switch" style="margin:0;">
+                            <input type="checkbox" id="iaf-inv-comm-is-commission" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <button type="button" class="iaf-submit" id="iaf-inv-comm-submit" onclick="submitInlineInvestorComm()">Добавить комиссионного клиента</button>
+                </div>
+            </div>
+            <div class="form-field" style="display: none;">
+                <div class="field-input-card">
+                    <label class="field-label" for="client_full_name">ФИО клиента</label>
+                    <div class="field-input-wrapper">
+                        <input type="text" id="client_full_name" name="client_full_name" placeholder="Введите ФИО клиента">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Инвестор (обычный сток — необязательно, для менеджера и админа) -->
+        <div id="investor-field" class="form-field">
+            <div class="field-input-card" style="border-radius: 20px 20px 0 0;">
+                <label class="field-label">Инвестор (необязательно)</label>
+                <div class="field-input-wrapper investor-search-wrapper">
+                    <input type="text" id="investor-search-input" placeholder="Введите для поиска или выберите инвестора..." autocomplete="off" style="flex:1; min-width:0;">
+                    <input type="hidden" name="investor_id" id="investor-id-input">
+                    <span id="investor-clear-btn" style="display:none; cursor:pointer; color:#888; padding:0 5px; font-size:18px;" title="Очистить">✕</span>
+                </div>
+                <div id="investor-search-results" class="investor-search-results"></div>
+            </div>
+            <div class="inline-add-btn" onclick="toggleInlineForm('investor-inline-form', this)">
+                <span>Добавить нового инвестора</span>
+                <span class="plus-icon" id="investor-inline-icon">+</span>
+            </div>
+            <div id="investor-inline-form" class="inline-add-form">
+                <div class="iaf-error" id="investor-iaf-error"></div>
+                <div class="iaf-field">
+                    <label class="iaf-label">Псевдоним / Имя <span style="color:#c00">*</span></label>
+                    <input type="text" class="iaf-input" id="iaf-inv-name" placeholder="Короткое имя">
+                </div>
+                <div class="iaf-field">
+                    <label class="iaf-label">ФИО</label>
+                    <input type="text" class="iaf-input" id="iaf-inv-full-name" placeholder="Полное имя">
+                </div>
+                <div class="iaf-field">
+                    <label class="iaf-label">Телефон</label>
+                    <input type="text" class="iaf-input" id="iaf-inv-phone" placeholder="+7...">
+                </div>
+                <div class="iaf-field">
+                    <label class="iaf-label">Почта</label>
+                    <input type="email" class="iaf-input" id="iaf-inv-email" placeholder="email@example.com">
+                </div>
+                <button type="button" class="iaf-submit" id="iaf-inv-submit" onclick="submitInlineInvestor()">Добавить инвестора</button>
+            </div>
+        </div>
+        
+        <!-- Город -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="city_id">Город <span class="required-mark">*</span></label>
+                <div class="field-input-wrapper">
+                    <select id="city_id" name="city_id" required>
+                        <option value="">Выбери город</option>
+                        {% for city in cities %}
+                            <option value="{{ city.id }}">{{ city.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Покупка / Выплата -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" id="buy-price-label" for="buy_price">Покупка</label>
+                <div class="field-input-wrapper">
+                    <input type="number" id="buy_price" step="0.01" name="buy_price" placeholder="Введи цену покупки" id="buy-price-input">
+                </div>
+                <p class="field-hint" id="buy-price-hint">Если не знаете цену покупки — не вводите</p>
+            </div>
+        </div>
+        
+        <!-- Продажа -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="expected_sell_price">Продажа <span class="required-mark">*</span></label>
+                <div class="field-input-wrapper">
+                    <input type="number" id="expected_sell_price" step="0.01" name="expected_sell_price" required placeholder="Введи цену продажи">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Комплектация -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="komplektatsiya">Комплектация</label>
+                <div class="field-input-wrapper">
+                    <select id="komplektatsiya" name="komplektatsiya">
+                        <option value="">Выберите комплектацию</option>
+                        <option value="Полный комплект">Полный комплект</option>
+                        <option value="Только часы">Только часы</option>
+                        <option value="Только коробка">Только коробка</option>
+                        <option value="Только документы">Только документы</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Расходы -->
+        <div class="expense-section">
+            <div class="form-field">
+                <div class="field-input-card">
+                    <div class="field-label" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Расход</span>
+                        <span style="font-size: 16px; color: #333; font-weight: 500;" id="total-expense">0$</span>
+                    </div>
+                    <div class="expense-list" id="expenses-list">
+                        <!-- Список расходов будет добавляться сюда -->
+                    </div>
+                    <div style="text-align: center;">
+                        <button type="button" class="add-expense-btn" onclick="openExpenseModal()">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Скрытые поля для отправки формы -->
+        <div id="expenses-hidden-inputs"></div>
+        
+        <!-- Модальное окно для добавления расхода -->
+        <div class="modal-overlay" id="expense-modal">
+            <div class="modal-content">
+                <h2 class="modal-title">Добавить расход</h2>
+                <div class="modal-field">
+                    <label class="modal-field-label" for="expense-type-select">Наименование <span class="required-mark">*</span></label>
+                    <div class="modal-input-card">
+                        <div class="modal-input-wrapper">
+                            <select id="expense-type-select">
+                                <option value="">Выберите тип расхода</option>
+                                {% for et in expense_types %}
+                                    <option value="{{ et.id }}" data-name="{{ et.name }}">{{ et.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-field">
+                    <label class="modal-field-label" for="expense-amount-input">Сумма <span class="required-mark">*</span></label>
+                    <div class="modal-input-card">
+                        <div class="modal-input-wrapper">
+                            <input type="number" step="0.01" id="expense-amount-input" placeholder="Введи сумму">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="modal-submit-btn" onclick="saveExpense()">Добавить</button>
+            </div>
+        </div>
+        
+        <!-- Комментарий -->
+        <div class="form-field">
+            <div class="field-input-card">
+                <label class="field-label" for="comment">Комментарий</label>
+                <div class="field-input-wrapper">
+                    <textarea id="comment" name="comment" rows="3" placeholder="Введите комментарий (необязательно)"></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Кнопка отправки -->
+        <button type="submit" class="submit-btn">Добавить сток</button>
+    </form>
+    
+    <!-- Дополнительные формы (скрыты по умолчанию) -->
+    <div class="additional-forms">
+        <div class="form-toggle" onclick="toggleForm('city-form')">
+            Добавить новый город
+        </div>
+        <div id="city-form" class="collapsible-form">
+            <form method="POST" action="{{ url_for('add_city') }}">
+                <div class="field-input-card">
+                    <label class="field-label" for="city-name-input">Название города <span class="required-mark">*</span></label>
+                    <div class="field-input-wrapper">
+                        <input type="text" id="city-name-input" name="name" required placeholder="Название города">
+                    </div>
+                </div>
+                <button type="submit" class="collapsible-form-btn">Добавить город</button>
+            </form>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+    // Превью фотографии
+    document.getElementById('photo-input').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('photo-preview');
+                preview.src = e.target.result;
+                preview.classList.add('active');
+                document.querySelector('.photo-upload-text').style.display = 'none';
+                document.querySelector('.photo-upload-icon').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Массив для хранения расходов
+    let expenses = [];
+    
+    // Открытие модального окна
+    function openExpenseModal() {
+        document.getElementById('expense-modal').classList.add('active');
+        document.getElementById('expense-type-select').value = '';
+        document.getElementById('expense-amount-input').value = '';
+    }
+    
+    // Закрытие модального окна
+    function closeExpenseModal() {
+        document.getElementById('expense-modal').classList.remove('active');
+    }
+    
+    // Сохранение расхода
+    function saveExpense() {
+        const typeSelect = document.getElementById('expense-type-select');
+        const selectedOption = typeSelect.options[typeSelect.selectedIndex];
+        const typeId = typeSelect.value;
+        const typeName = selectedOption ? selectedOption.getAttribute('data-name') || selectedOption.text : '';
+        const amount = parseFloat(document.getElementById('expense-amount-input').value);
+        
+        if (!typeId || !amount || amount <= 0) {
+            alert('Заполните все поля корректно');
+            return;
+        }
+        
+        // Добавляем расход в массив
+        expenses.push({
+            typeId: typeId,
+            name: typeName,
+            amount: amount
+        });
+        
+        // Обновляем отображение
+        renderExpenses();
+        updateTotalExpense();
+        closeExpenseModal();
+    }
+    
+    // Удаление расхода
+    function removeExpense(index) {
+        expenses.splice(index, 1);
+        renderExpenses();
+        updateTotalExpense();
+    }
+    
+    // Отображение списка расходов
+    function renderExpenses() {
+        const container = document.getElementById('expenses-list');
+        const hiddenInputs = document.getElementById('expenses-hidden-inputs');
+        
+        container.innerHTML = '';
+        hiddenInputs.innerHTML = '';
+        
+        expenses.forEach((expense, index) => {
+            // Создаем элемент списка
+            const item = document.createElement('div');
+            item.className = 'expense-item';
+            item.innerHTML = `
+                <div class="expense-item-info">
+                    <span class="expense-item-name">${expense.name}</span>
+                    <span class="expense-item-amount">${expense.amount.toFixed(2)}$</span>
+                </div>
+                <button type="button" class="remove-expense-btn" onclick="removeExpense(${index})">−</button>
+            `;
+            container.appendChild(item);
+            
+            // Создаем скрытые поля для формы
+            const typeInput = document.createElement('input');
+            typeInput.type = 'hidden';
+            typeInput.name = 'expense_type_id';
+            typeInput.value = expense.typeId;
+            
+            const amountInput = document.createElement('input');
+            amountInput.type = 'hidden';
+            amountInput.name = 'expense_amount';
+            amountInput.value = expense.amount;
+            
+            hiddenInputs.appendChild(typeInput);
+            hiddenInputs.appendChild(amountInput);
+        });
+    }
+    
+    // Переключение дополнительных форм
+    function toggleForm(formId) {
+        const form = document.getElementById(formId);
+        const toggle = form.previousElementSibling;
+        
+        form.classList.toggle('active');
+        toggle.classList.toggle('active');
+    }
+    
+    // Обновление общей суммы расходов
+    function updateTotalExpense() {
+        let total = 0;
+        expenses.forEach(expense => {
+            total += expense.amount;
+        });
+        document.getElementById('total-expense').textContent = total.toFixed(2) + '$';
+    }
+    
+    // Закрытие модального окна при клике вне его
+    document.getElementById('expense-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeExpenseModal();
+        }
+    });
+    
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+        updateTotalExpense();
+    });
+    
+    // Переключение комиссионного режима
+    function toggleCommission(isCommission) {
+        document.getElementById('komissionnyy-hidden').value = isCommission ? '1' : '0';
+        
+        // Показываем/скрываем поля клиента
+        document.getElementById('commission-fields').style.display = isCommission ? 'block' : 'none';
+        
+        // Показываем/скрываем поле инвестора (обычный сток)
+        const investorField = document.getElementById('investor-field');
+        if (investorField) {
+            investorField.style.display = isCommission ? 'none' : 'block';
+            const investorIdInput = document.getElementById('investor-id-input');
+            if (investorIdInput) {
+                investorIdInput.required = false;  // Инвестор необязателен
+            }
+        }
+        
+        // Меняем лейбл и подсказку для поля покупка/выплата
+        const label = document.getElementById('buy-price-label');
+        const hint = document.getElementById('buy-price-hint');
+        if (isCommission) {
+            label.textContent = 'Выплата';
+            if (hint) hint.style.display = 'none';
+            document.getElementById('buy_price').placeholder = 'Введи сумму выплаты';
+        } else {
+            label.textContent = 'Покупка';
+            if (hint) hint.style.display = 'block';
+            document.getElementById('buy_price').placeholder = 'Введи цену покупки';
+        }
+    }
+
+    // ===== Поиск инвестора (обычный сток) =====
+    (function() {
+        const searchInput = document.getElementById('investor-search-input');
+        const idInput = document.getElementById('investor-id-input');
+        const results = document.getElementById('investor-search-results');
+        const clearBtn = document.getElementById('investor-clear-btn');
+        if (!searchInput) return;
+
+        let timer;
+        searchInput.addEventListener('input', function() {
+            if (idInput.value) { idInput.value = ''; clearBtn.style.display = 'none'; }
+            clearTimeout(timer);
+            const q = this.value.trim();
+            timer = setTimeout(() => fetchInvestors(q, results, function(inv) {
+                selectInvestor(inv.id, inv.name, searchInput, idInput, clearBtn, results);
+            }), 300);
+        });
+        searchInput.addEventListener('focus', function() {
+            if (!idInput.value) fetchInvestors(this.value.trim(), results, function(inv) {
+                selectInvestor(inv.id, inv.name, searchInput, idInput, clearBtn, results);
+            });
+        });
+        clearBtn.addEventListener('click', function() {
+            idInput.value = '';
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            results.classList.remove('active');
+            results.innerHTML = '';
+        });
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.investor-search-wrapper') && !e.target.closest('#investor-search-results')) {
+                results.classList.remove('active');
+            }
+        });
+    })();
+
+    // ===== Поиск инвестора (комиссионный сток — только комиссионные клиенты) =====
+    (function() {
+        const searchInput = document.getElementById('investor-comm-search-input');
+        const results = document.getElementById('investor-comm-search-results');
+        const clearBtn = document.getElementById('investor-comm-clear-btn');
+        if (!searchInput) return;
+
+        const commInvIdInput = document.getElementById('commission_investor_id');
+        function fillCommFields(inv) {
+            const fnEl = document.getElementById('client_full_name');
+            const phEl = document.getElementById('client_phone');
+            const emEl = document.getElementById('client_email');
+            if (fnEl) fnEl.value = inv.full_name || inv.name;
+            if (phEl) phEl.value = inv.phone || '';
+            if (emEl) emEl.value = inv.email || '';
+            if (commInvIdInput) commInvIdInput.value = inv.id || '';
+            searchInput.value = inv.name + (inv.full_name ? ' — ' + inv.full_name : '');
+            if (clearBtn) clearBtn.style.display = 'inline-block';
+            results.classList.remove('active');
+            results.innerHTML = '';
+        }
+        let timer;
+        searchInput.addEventListener('input', function() {
+            if (clearBtn) { clearBtn.style.display = 'none'; }
+            if (commInvIdInput) commInvIdInput.value = '';
+            clearTimeout(timer);
+            const q = this.value.trim();
+            timer = setTimeout(() => fetchInvestors(q, results, fillCommFields, true), 300);
+        });
+        searchInput.addEventListener('focus', function() {
+            fetchInvestors(this.value.trim(), results, fillCommFields, true);
+        });
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                clearBtn.style.display = 'none';
+                results.classList.remove('active');
+                results.innerHTML = '';
+                if (commInvIdInput) commInvIdInput.value = '';
+                const fnEl = document.getElementById('client_full_name');
+                const phEl = document.getElementById('client_phone');
+                const emEl = document.getElementById('client_email');
+                if (fnEl) fnEl.value = '';
+                if (phEl) phEl.value = '';
+                if (emEl) emEl.value = '';
+            });
+        }
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.investor-search-wrapper') && !e.target.closest('#investor-comm-search-results')) {
+                results.classList.remove('active');
+            }
+        });
+    })();
+
+    function fetchInvestors(q, resultsEl, onSelect, commissionOnly) {
+        let url = '/api/investors/search?q=' + encodeURIComponent(q) + '&limit=15';
+        if (commissionOnly) url += '&commission_only=1';
+        fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                resultsEl.innerHTML = '';
+                if (data.length === 0) {
+                    const label = commissionOnly ? 'Комиссионные клиенты не найдены' : 'Инвесторы не найдены';
+                    resultsEl.innerHTML = '<div class="investor-search-item" style="color:#999;">' + label + '</div>';
+                } else {
+                    data.forEach(inv => {
+                        const div = document.createElement('div');
+                        div.className = 'investor-search-item';
+                        const contacts = [inv.phone, inv.email].filter(Boolean).join(' · ');
+                        div.innerHTML = '<span class="inv-name">' + escapeHtml(inv.name) + (inv.full_name ? ' — ' + escapeHtml(inv.full_name) : '') + '</span>' +
+                            (contacts ? '<div class="inv-contacts">' + escapeHtml(contacts) + '</div>' : '');
+                        div.onclick = () => onSelect(inv);
+                        resultsEl.appendChild(div);
+                    });
+                }
+                resultsEl.classList.add('active');
+            }).catch(() => {
+                resultsEl.innerHTML = '<div class="investor-search-item" style="color:#999;">Ошибка загрузки</div>';
+                resultsEl.classList.add('active');
+            });
+    }
+
+    function selectInvestor(id, name, searchInput, idInput, clearBtn, resultsEl) {
+        idInput.value = id;
+        searchInput.value = name;
+        clearBtn.style.display = 'inline-block';
+        resultsEl.classList.remove('active');
+        resultsEl.innerHTML = '';
+    }
+
+    function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    function submitInlineInvestorComm() {
+        const btn = document.getElementById('iaf-inv-comm-submit');
+        const errEl = document.getElementById('investor-comm-iaf-error');
+        errEl.style.display = 'none';
+        const name = document.getElementById('iaf-inv-comm-name').value.trim();
+        const full_name = document.getElementById('iaf-inv-comm-full-name').value.trim();
+        const phone = document.getElementById('iaf-inv-comm-phone').value.trim();
+        const email = document.getElementById('iaf-inv-comm-email').value.trim();
+        const is_commission_client = document.getElementById('iaf-inv-comm-is-commission').checked;
+        if (!name) { errEl.textContent = 'Введите псевдоним'; errEl.style.display = 'block'; return; }
+        btn.disabled = true; btn.textContent = 'Сохранение...';
+        fetch('/api/add_investor', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name, full_name, phone, email, is_commission_client})
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                // Вставляем как будто выбрали из поиска — заполняем поля клиента
+                const fnEl = document.getElementById('client_full_name');
+                const phEl = document.getElementById('client_phone');
+                const emEl = document.getElementById('client_email');
+                if (fnEl) fnEl.value = data.full_name || data.name;
+                if (phEl) phEl.value = data.phone || '';
+                if (emEl) emEl.value = data.email || '';
+                // Сохраняем investor_id
+                const invIdEl = document.getElementById('commission_investor_id');
+                if (invIdEl) invIdEl.value = data.id || '';
+                // Отображаем в поле поиска
+                document.getElementById('investor-comm-search-input').value = data.name + (data.full_name ? ' — ' + data.full_name : '');
+                document.getElementById('investor-comm-clear-btn').style.display = 'inline-block';
+                // Закрываем форму и очищаем поля
+                document.getElementById('investor-comm-inline-form').classList.remove('open');
+                document.getElementById('investor-comm-inline-icon').textContent = '+';
+                document.getElementById('iaf-inv-comm-name').value = '';
+                document.getElementById('iaf-inv-comm-full-name').value = '';
+                document.getElementById('iaf-inv-comm-phone').value = '';
+                document.getElementById('iaf-inv-comm-email').value = '';
+                document.getElementById('iaf-inv-comm-is-commission').checked = true;
+            } else {
+                errEl.textContent = data.error || 'Ошибка'; errEl.style.display = 'block';
+            }
+        }).catch(() => {
+            errEl.textContent = 'Ошибка сети'; errEl.style.display = 'block';
+        }).finally(() => {
+            btn.disabled = false; btn.textContent = 'Добавить комиссионного клиента';
+        });
+    }
+
+    // ===== Inline-форма добавления =====
+    function toggleInlineForm(formId, btn) {
+        const form = document.getElementById(formId);
+        const isOpen = form.classList.contains('open');
+        form.classList.toggle('open', !isOpen);
+        const icon = btn ? btn.querySelector('.plus-icon') : null;
+        if (icon) icon.textContent = isOpen ? '+' : '×';
+    }
+
+    function submitInlineInvestor() {
+        const btn = document.getElementById('iaf-inv-submit');
+        const errEl = document.getElementById('investor-iaf-error');
+        errEl.style.display = 'none';
+        const name = document.getElementById('iaf-inv-name').value.trim();
+        const full_name = document.getElementById('iaf-inv-full-name').value.trim();
+        const phone = document.getElementById('iaf-inv-phone').value.trim();
+        const email = document.getElementById('iaf-inv-email').value.trim();
+        if (!name) { errEl.textContent = 'Введите псевдоним'; errEl.style.display = 'block'; return; }
+        btn.disabled = true; btn.textContent = 'Сохранение...';
+        fetch('/api/add_investor', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name, full_name, phone, email})
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                // Выбираем нового инвестора
+                document.getElementById('investor-id-input').value = data.id;
+                document.getElementById('investor-search-input').value = data.name + (data.full_name ? ' — ' + data.full_name : '');
+                document.getElementById('investor-clear-btn').style.display = 'inline-block';
+                // Закрываем форму и очищаем поля
+                document.getElementById('investor-inline-form').classList.remove('open');
+                document.getElementById('investor-inline-icon').textContent = '+';
+                document.getElementById('iaf-inv-name').value = '';
+                document.getElementById('iaf-inv-full-name').value = '';
+                document.getElementById('iaf-inv-phone').value = '';
+                document.getElementById('iaf-inv-email').value = '';
+            } else {
+                errEl.textContent = data.error || 'Ошибка'; errEl.style.display = 'block';
+            }
+        }).catch(() => {
+            errEl.textContent = 'Ошибка сети'; errEl.style.display = 'block';
+        }).finally(() => {
+            btn.disabled = false; btn.textContent = 'Добавить инвестора';
+        });
+    }
+</script>
+{% endblock %}

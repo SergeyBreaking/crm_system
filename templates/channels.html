@@ -1,0 +1,402 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .channels-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;
+    }
+    
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .logo-icon a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+    }
+    
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    .period-selector {
+        background: rgba(255, 255, 255, 0.7);
+        padding: 15px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .period-selector form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .period-selector .form-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .period-selector select,
+    .period-selector input {
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .period-selector label {
+        font-weight: 500;
+        color: #333;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .period-card {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 12px 24px;
+        border-radius: 43px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 20px;
+        display: block;
+        width: 65%;
+        margin-left: auto;
+        margin-right: auto;
+        box-sizing: border-box;
+    }
+    
+    .total-stats-card {
+        background: #514D4A;
+        color: white;
+        padding: 20px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .total-stats-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .total-stats-row:last-child {
+        border-bottom: none;
+    }
+    
+    .total-stats-label {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+    
+    .total-stats-value {
+        font-size: 18px;
+        font-weight: bold;
+    }
+    
+    .add-form-card {
+        background: rgba(255, 255, 255, 0.7);
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .add-form-card h3 {
+        margin: 0 0 15px 0;
+        font-size: 18px;
+        color: #333;
+    }
+    
+    .form-field {
+        margin-bottom: 15px;
+    }
+    
+    .form-field label {
+        display: block;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 5px;
+        font-size: 14px;
+    }
+    
+    .form-field input,
+    .form-field select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+    
+    .form-field-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .submit-btn {
+        background: #B58358;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 10px;
+        border: none;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    .submit-btn:hover {
+        background: #9a6f47;
+    }
+    
+    .stats-list {
+        margin-top: 20px;
+    }
+    
+    .stats-date-group {
+        margin-bottom: 25px;
+    }
+    
+    .stats-date-header {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+        padding-left: 5px;
+    }
+    
+    .stats-item {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 15px 20px;
+        border-radius: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .stats-item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        font-size: 14px;
+    }
+    
+    .stats-item-label {
+        color: #666;
+    }
+    
+    .stats-item-value {
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .stats-empty {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        color: #666;
+    }
+    
+    @media (min-width: 768px) {
+        .channels-container {
+            max-width: 600px;
+            padding-top: 90px;
+        }
+    }
+</style>
+
+<div class="channels-container">
+    <div class="logo-icon">
+        <a href="{{ url_for('main') }}">
+            <img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo">
+        </a>
+    </div>
+    
+    <div class="period-selector">
+        <form method="GET">
+            <div class="form-row">
+                <select name="year" onchange="this.form.submit()">
+                    <option value="all">Все годы</option>
+                    {% for y in all_years %}
+                        <option value="{{ y }}" {% if selected_year == y|string %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+                <select name="month" onchange="this.form.submit()">
+                    <option value="all">Все месяцы</option>
+                    {% for m in range(1,13) %}
+                        <option value="{{ m }}" {% if selected_month == m|string %}selected{% endif %}>
+                            {{ ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][m-1] }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            {% if is_admin %}
+            <div class="form-row">
+                <label>
+                    <strong>Менеджер:</strong>
+                    <select name="employee" onchange="this.form.submit()" style="flex: 1;">
+                        <option value="all">Все менеджеры</option>
+                        {% for emp in all_employees %}
+                            <option value="{{ emp.id }}" {% if employee_filter == emp.id|string %}selected{% endif %}>{{ emp.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="period-card">
+        {{ period_label }}{% if employee_filter != 'all' %}{% for emp in all_employees %}{% if emp.id|string == employee_filter %} - {{ emp.name }}{% endif %}{% endfor %}{% endif %}
+    </div>
+
+    <div class="total-stats-card">
+        <div class="total-stats-row">
+            <span class="total-stats-label">📱 Телеграм</span>
+            <span class="total-stats-value">{{ total_telegram }}</span>
+        </div>
+        <div class="total-stats-row">
+            <span class="total-stats-label">📷 Инстаграм</span>
+            <span class="total-stats-value">{{ total_instagram }}</span>
+        </div>
+        <div class="total-stats-row">
+            <span class="total-stats-label">🌐 Сайт</span>
+            <span class="total-stats-value">{{ total_website }}</span>
+        </div>
+        <div class="total-stats-row">
+            <span class="total-stats-label">📞 Личный телефон</span>
+            <span class="total-stats-value">{{ total_phone }}</span>
+        </div>
+    </div>
+
+    <div class="add-form-card">
+        <h3>Добавить данные за дату</h3>
+        <form method="POST">
+            <div class="form-field">
+                <label>Дата:</label>
+                <input type="date" name="date" value="{{ today.strftime('%Y-%m-%d') }}" required>
+            </div>
+            
+            {% if is_admin %}
+            <div class="form-field">
+                <label>Менеджер:</label>
+                <select name="employee_id" required>
+                    {% for emp in all_employees %}
+                        <option value="{{ emp.id }}" {% if selected_employee_id and selected_employee_id == emp.id %}selected{% endif %}>{{ emp.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% else %}
+            {% if selected_employee_id %}
+            <input type="hidden" name="employee_id" value="{{ selected_employee_id }}">
+            {% else %}
+            <div style="color: red; padding: 10px; background: #ffe6e6; border-radius: 10px; margin-bottom: 10px;">
+                Ошибка: не удалось определить менеджера. Обратитесь к администратору.
+            </div>
+            {% endif %}
+            {% endif %}
+            
+            <div class="form-field-row">
+                <div class="form-field">
+                    <label>📱 Телеграм</label>
+                    <input type="number" name="telegram_count" min="0" value="0" required>
+                </div>
+                <div class="form-field">
+                    <label>📷 Инстаграм</label>
+                    <input type="number" name="instagram_count" min="0" value="0" required>
+                </div>
+            </div>
+            
+            <div class="form-field-row">
+                <div class="form-field">
+                    <label>🌐 Сайт</label>
+                    <input type="number" name="website_count" min="0" value="0" required>
+                </div>
+                <div class="form-field">
+                    <label>📞 Личный телефон</label>
+                    <input type="number" name="phone_count" min="0" value="0" required>
+                </div>
+            </div>
+            
+            <button type="submit" class="submit-btn">Сохранить</button>
+        </form>
+    </div>
+
+    <div class="stats-list">
+        {% if stats_by_date %}
+            {% for stat_date, stats in stats_by_date %}
+            <div class="stats-date-group">
+                <div class="stats-date-header">
+                    {% set months_ru_short = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'] %}
+                    {{ stat_date.day }} {{ months_ru_short[stat_date.month - 1] }} {{ stat_date.year }}
+                </div>
+                {% for stat in stats %}
+                <div class="stats-item">
+                    {% if is_admin %}
+                    <div class="stats-item-row">
+                        <span class="stats-item-label">Менеджер:</span>
+                        <span class="stats-item-value">{{ stat.employee.name }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="stats-item-row">
+                        <span class="stats-item-label">📱 Телеграм</span>
+                        <span class="stats-item-value">{{ stat.telegram_count }}</span>
+                    </div>
+                    <div class="stats-item-row">
+                        <span class="stats-item-label">📷 Инстаграм</span>
+                        <span class="stats-item-value">{{ stat.instagram_count }}</span>
+                    </div>
+                    <div class="stats-item-row">
+                        <span class="stats-item-label">🌐 Сайт</span>
+                        <span class="stats-item-value">{{ stat.website_count }}</span>
+                    </div>
+                    <div class="stats-item-row">
+                        <span class="stats-item-label">📞 Личный телефон</span>
+                        <span class="stats-item-value">{{ stat.phone_count }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="stats-empty">Нет данных за выбранный период</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

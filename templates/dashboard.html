@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .dashboard-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        padding-top: 150px;  /* Отступ для фиксированного логотипа */
+    }
+    
+    /* Иконка сверху - фиксированная */
+    .logo-icon {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        margin: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+    
+    .logo-icon a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+    }
+    
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    /* Общая ширина для всех блоков */
+    .dashboard-container > .period-selector,
+    .dashboard-container > .metrics-row,
+    .dashboard-container > .profit-card,
+    .dashboard-container > .details-btn,
+    .dashboard-container > .action-buttons {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Карточка периода */
+    .period-card {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 15px 24px;
+        border-radius: 20px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 20px;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Две карточки метрик */
+    .metrics-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .metric-card {
+        flex: 1;
+        min-width: 0;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        text-decoration: none;
+        display: block;
+        color: inherit;
+        box-sizing: border-box;
+    }
+    
+    .metric-card:hover {
+        background: rgba(255, 255, 255, 0.8);
+        transform: translateY(-2px);
+    }
+    
+    .metric-card h2 {
+        font-size: 36px;
+        font-weight: bold;
+        margin: 0;
+        color: #333;
+    }
+    
+    .metric-card p {
+        font-size: 14px;
+        color: #333;
+        margin: 8px 0 0;
+    }
+    
+    /* Карточка прибыли */
+    .profit-card {
+        background: #514D4A;
+        color: white;
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        text-decoration: none;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .profit-card:hover {
+        background: #3d3a38;
+        transform: translateY(-2px);
+    }
+    
+    .profit-card h2 {
+        font-size: 42px;
+        font-weight: bold;
+        margin: 0;
+        color: white;
+    }
+    
+    .profit-card p {
+        font-size: 14px;
+        margin: 10px 0 0;
+        opacity: 0.9;
+        color: white;
+    }
+    
+    /* Кнопка Подробнее */
+    .details-btn {
+        display: block;
+        width: 100%;
+        margin: 0 0 20px;
+        background: #B58358;
+        color: white;
+        padding: 15px;
+        border-radius: 20px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        box-sizing: border-box;
+    }
+    
+    /* Кнопки действий */
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        box-sizing: border-box;
+    }
+    
+    .action-btn {
+        display: block;
+        width: 100%;
+        padding: 15px;
+        border-radius: 20px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+        box-sizing: border-box;
+    }
+    
+    .action-btn-primary {
+        background: #B58358;
+        color: white;
+        font-weight: bold;
+    }
+    
+    .action-btn-secondary {
+        background: rgba(255, 255, 255, 0.5);
+        color: #333;
+        font-weight: 500;
+    }
+    
+    /* Выбор периода (скрыт по умолчанию, можно показать через настройки) */
+    .period-selector {
+        text-align: center;
+        margin-bottom: 20px;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 15px;
+        display: none;
+    }
+    
+    .period-selector.active {
+        display: block;
+    }
+    
+    .period-selector form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .period-selector select,
+    .period-selector input {
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+    }
+    
+    .period-selector button {
+        background: #B58358;
+        color: white;
+        padding: 8px 20px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+    }
+    
+    .toggle-period-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #B58358;
+        color: white;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        z-index: 100;
+    }
+    
+    @media (min-width: 768px) {
+        .dashboard-container {
+            max-width: 600px;
+            padding-top: 90px;
+        }
+        
+        .action-buttons {
+            max-width: 600px;
+        }
+        
+        .metric-card h2 {
+            font-size: 48px;
+        }
+        
+        .profit-card h2 {
+            font-size: 52px;
+        }
+    }
+</style>
+
+<!-- Иконка - фиксированная -->
+<div class="logo-icon">
+    <a href="{{ url_for('main') }}">
+        <img src="{{ url_for('uploaded_file', filename='logo.png') }}" alt="Logo">
+    </a>
+</div>
+
+<div class="dashboard-container">
+    <!-- Карточка периода -->
+    <div style="text-align: center; margin-bottom: 30px;">
+        <div class="period-card">{{ period_label }}</div>
+    </div>
+    
+    <!-- Выбор периода (скрыт по умолчанию) -->
+    <div class="period-selector" id="periodSelector">
+        <form method="GET">
+            <select name="period_type" onchange="toggleCustom(this.value)">
+                <option value="current_month" {% if period_type == 'current_month' %}selected{% endif %}>Месяц</option>
+                <option value="custom" {% if period_type == 'custom' %}selected{% endif %}>Произвольный период</option>
+            </select>
+
+            <div id="month-select" style="display: flex; gap: 10px;">
+                <select name="month">
+                    {% for m in range(1,13) %}
+                        <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>
+                            {{ ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][m-1] }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <select name="year">
+                    {% for y in all_years %}
+                        <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="custom-dates" style="display: none; width: 100%;">
+                <input type="date" name="start_date" value="{{ request.args.get('start_date', '') }}" style="width: 48%;">
+                <input type="date" name="end_date" value="{{ request.args.get('end_date', '') }}" style="width: 48%;">
+            </div>
+
+            <button type="submit">Применить</button>
+        </form>
+    </div>
+    
+    <!-- Две карточки метрик (у менеджера только «Реализовано», у админа — ещё «Доход») -->
+    <div class="metrics-row">
+        <a href="{{ url_for('sales', year=selected_year, month=selected_month) }}" class="metric-card">
+            <h2>{{ count_sales }}</h2>
+            <p>Реализовано</p>
+        </a>
+        {% if session.get('is_admin') %}
+        <a href="{{ url_for('sales', year=selected_year, month=selected_month) }}" class="metric-card">
+            <h2>{{ "%.0f"|format(gross_income) }}$</h2>
+            <p>Доход</p>
+        </a>
+        {% endif %}
+    </div>
+    
+    <!-- Карточка прибыли (только для админа) -->
+    {% if session.get('is_admin') %}
+    <a href="{{ url_for('sales', year=selected_year, month=selected_month) }}" class="profit-card">
+        <h2>{{ "%.0f"|format(net_profit) }}$</h2>
+        <p>Прибыль с вычетом расходов</p>
+    </a>
+    {% endif %}
+    
+    <!-- Кнопка Подробнее -->
+    <a href="{{ url_for('sales') }}" class="details-btn">Подробнее</a>
+    
+    <!-- Кнопки действий -->
+    <div class="action-buttons">
+        <a href="{{ url_for('add_sale') }}" class="action-btn action-btn-primary">Добавить продажу</a>
+        <a href="{{ url_for('all_sales_summary') }}" class="action-btn action-btn-secondary">Все продажи</a>
+        <a href="{{ url_for('manager_menu') }}" class="action-btn action-btn-secondary">Статистика менеджера</a>
+    </div>
+    
+    <!-- Кнопка переключения выбора периода -->
+    <button class="toggle-period-btn" onclick="togglePeriodSelector()" title="Выбрать период">📅</button>
+</div>
+
+<script>
+    function toggleCustom(val) {
+        document.getElementById('month-select').style.display = val === 'current_month' ? 'flex' : 'none';
+        document.getElementById('custom-dates').style.display = val === 'custom' ? 'flex' : 'none';
+    }
+    
+    function togglePeriodSelector() {
+        const selector = document.getElementById('periodSelector');
+        selector.classList.toggle('active');
+    }
+    
+    // При загрузке страницы правильно показать/скрыть
+    toggleCustom('{{ period_type }}');
+</script>
+{% endblock %}
